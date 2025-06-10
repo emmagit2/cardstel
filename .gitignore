@@ -2,3 +2,5 @@ echo "config/firebase-admin.json" >> .gitignore
 git add .gitignore
 
 config/firebase-admin.json
+node_modules/
+.env
