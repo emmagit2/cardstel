@@ -151,6 +151,7 @@
       height: calc(100vh - 56px);
       display: flex;
       gap: 1rem;
+      padding-top: 5%;
       overflow: hidden;
     }
 
@@ -290,6 +291,128 @@
     #sendBtn:hover {
       background-color: #1e40af;
     }
+/* Layout */
+#mainContent {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#chatListContainer {
+  width: 280px;
+  background: #f7f7f7;
+  border-right: 1px solid #ddd;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+#chatListContainer h3 {
+  margin-bottom: 12px;
+}
+
+#chatSearch {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.chat-group details summary {
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.chatListGroup {
+  list-style: none;
+  padding-left: 10px;
+}
+
+.chatListGroup li {
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.chatListGroup li:hover {
+  background-color: #e0e0e0;
+}
+
+.chatListGroup li.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Chat UI */
+#chatUI {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: #fff;
+}
+
+#chatHeader {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+#messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background: #f2f2f2;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+  line-height: 1.4;
+}
+
+.admin {
+  background-color: #cce5ff;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.staff {
+  background-color: #e2e2e2;
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+#chatForm {
+  display: flex;
+  gap: 10px;
+}
+
+#messageInput {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+#sendBtn {
+  padding: 10px 16px;
+  background: #007bff;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
   </style>
 </head>
@@ -342,34 +465,67 @@
         </li>
       </ul>
     </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main id="mainContent">
-    <!-- Left chat list -->
-    <div id="chatListContainer">
-      <h5>Chats</h5>
-      <ul id="chatList">
-        <!-- Chats will be populated here -->
-      </ul>
-    </div>
-
-    <!-- Right chat UI -->
-    <div id="chatUI">
-      <header id="chatHeader">Select a chat</header>
-      <div id="messagesContainer"></div>
-      <form id="chatForm" style="display:none;">
-        <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required />
-        <button type="submit" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-      </form>
-    </div>
-  </main>
-<div class="section">
+    <div class="section">
   <h5>Manage Staff</h5>
   <button class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#addStaffModal">+ Add Staff</button>
 </div>
+  </aside>
 
-<!-- Modal for Adding Staff -->
+<!-- Main Content -->
+<main id="mainContent">
+  <!-- Left chat list -->
+  <div id="chatListContainer">
+  <h3>Chats</h3>
+
+  <!-- Departments -->
+  <div class="chat-group">
+    <label>Departments</label>
+    <input type="text" class="searchInput" data-target="departmentList" placeholder="Search departments..." />
+    <ul id="departmentList" class="chatListGroup">
+      <li>HR</li>
+      <li>Finance</li>
+      <li>Engineering</li>
+      <li>Design</li>
+    </ul>
+  </div>
+
+  <!-- Staff -->
+  <div class="chat-group">
+    <label>Staff</label>
+    <input type="text" class="searchInput" data-target="staffList" placeholder="Search staff..." />
+    <ul id="staffList" class="chatListGroup">
+      <li>John Doe</li>
+      <li>Jane Smith</li>
+      <li>Chris James</li>
+    </ul>
+  </div>
+
+  <!-- Admin -->
+  <div class="chat-group">
+    <label>Admins</label>
+    <input type="text" class="searchInput" data-target="adminList" placeholder="Search admins..." />
+    <ul id="adminList" class="chatListGroup">
+      <li>Admin Alpha</li>
+      <li>Admin Beta</li>
+    </ul>
+  </div>
+</div>
+
+
+  <!-- Right chat UI -->
+  <div id="chatUI">
+    <header id="chatHeader">Select a chat</header>
+    <div id="messagesContainer"></div>
+    <form id="chatForm">
+      <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required />
+      <button type="submit" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
+  </div>
+</main>
+
+
+
+<!-- Modal for Adding Staff (with registration link email) -->
 <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form id="addStaffForm" class="modal-content">
@@ -379,54 +535,264 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label for="staffName" class="form-label">Staff Name</label>
-          <input type="text" class="form-control" id="staffName" name="name" required />
-        </div>
-        <div class="mb-3">
           <label for="staffEmail" class="form-label">Email</label>
           <input type="email" class="form-control" id="staffEmail" name="email" required />
         </div>
         <div class="mb-3">
-          <label for="staffDepartment" class="form-label">Department</label>
-          <input type="text" class="form-control" id="staffDepartment" name="department" required />
+          <label for="staffRole" class="form-label">Role</label>
+          <select class="form-select" id="staffRole" name="role" required>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
+      <div class="mb-3">
+  <label for="staffDepartment" class="form-label">Department (optional)</label>
+  <select class="form-select" id="staffDepartment" name="department_id">
+    <option value="">-- None --</option>
+  </select>
+</div>
+
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Add Staff</button>
+        <button type="submit" class="btn btn-primary">Send Invite</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Add Department Modal -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addDepartmentForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Department</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control" id="newDeptName" placeholder="Enter department name" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Add</button>
       </div>
     </form>
   </div>
 </div>
 
+<!-- Edit Department Modal -->
+<div class="modal fade" id="editDepartmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editDepartmentForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Department</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control" id="editDeptName" required />
+        <input type="hidden" id="editDeptId" />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Assign Staff Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="assignForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Assign Staff</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="assignDeptId" />
+        <input type="email" class="form-control" id="assignEmail" placeholder="Staff email" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-info">Assign</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reusable Success Toast Message -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="successToastBody">
+        Operation successful!
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+<!-- Error Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="errorToastBody">
+        An error occurred.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+
+
+
   <!-- Bootstrap JS Bundle (includes Popper) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-  document.getElementById('addStaffForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+ <!-- Add these in your HTML <head> or before </body> -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 
-    const name = document.getElementById('staffName').value;
-    const email = document.getElementById('staffEmail').value;
-    const department = document.getElementById('staffDepartment').value;
+<script>
+  // 🔐 Initialize Firebase (replace with your actual config)
+     const firebaseConfig = {
+      apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+      authDomain: "chat-app-6776e.firebaseapp.com",
+      projectId: "chat-app-6776e",
+      storageBucket: "chat-app-6776e.firebasestorage.app",
+      messagingSenderId: "136411415099",
+      appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+      measurementId: "G-GVS3VG6Y50"
+    };
+    
+  firebase.initializeApp(firebaseConfig);
+</script>
 
-    const response = await fetch('/api/staff', {
+<script>
+  // Wait until Firebase auth is ready
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      alert("You must be logged in.");
+      return;
+    }
+
+    const token = await user.getIdToken();
+
+    // 🌐 Connect to Socket.IO with Firebase token
+    const socket = io({
+      auth: {
+        token: token
+      }
+    });
+
+    // ✅ Receive message from server
+    socket.on('chat message', (data) => {
+      console.log("New message received:", data);
+      renderMessage(data); // update the UI
+    });
+
+    // ✉️ Send message on form submit
+    document.getElementById('chatForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const msg = input.value.trim();
+
+      if (!msg) return;
+
+      socket.emit('chat message', {
+        content: msg,
+        type: 'department' // 'private', 'broadcast' as needed
+      });
+
+      input.value = '';
+    });
+
+    // 🧾 Render message in UI
+    function renderMessage({ content, senderId, isSelf }) {
+      const container = document.getElementById('messagesContainer');
+      const div = document.createElement('div');
+      div.className = 'message ' + (isSelf ? 'admin' : 'staff');
+      div.textContent = content;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+  });
+</script>
+
+ 
+ 
+ <script>
+function showSuccess(message = "Success!") {
+  document.getElementById('successToastBody').textContent = message;
+  new bootstrap.Toast(document.getElementById('successToast')).show();
+}
+
+function showError(message = "Something went wrong.") {
+  document.getElementById('errorToastBody').textContent = message;
+  new bootstrap.Toast(document.getElementById('errorToast')).show();
+}
+
+
+async function populateDepartmentDropdown() {
+    try {
+      const res = await fetch('/api/departments');
+      const departments = await res.json();
+
+      const select = document.getElementById('staffDepartment');
+      select.innerHTML = '<option value="">-- None --</option>'; // Reset
+
+      departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id;
+        option.textContent = dept.name;
+        select.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Failed to load departments:", err);
+    }
+  }
+
+  // Optional: When modal is shown, load departments
+  const addStaffModal = document.getElementById('addStaffModal');
+  addStaffModal.addEventListener('show.bs.modal', populateDepartmentDropdown);
+
+ document.getElementById('addStaffForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById('staffEmail').value.trim();
+  const role = document.getElementById('staffRole').value;
+  const department_id = document.getElementById('staffDepartment').value || null;
+
+  try {
+    const response = await fetch('/api/staff/invite', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ name, email, department })
+      body: JSON.stringify({ email, role, department_id })
     });
 
-    const result = await response.json();
+    let resultText = await response.text(); // <-- get text first
+
+    // Try to parse JSON
+    let result;
+    try {
+      result = JSON.parse(resultText);
+    } catch (jsonError) {
+      throw new Error('Server returned non-JSON: ' + resultText.slice(0, 100));
+    }
 
     if (response.ok) {
-      alert('Staff added successfully!');
+      showSuccess("Invitation email sent successfully!");
       document.getElementById('addStaffForm').reset();
       const modal = bootstrap.Modal.getInstance(document.getElementById('addStaffModal'));
       modal.hide();
     } else {
-      alert('Error adding staff: ' + result.message);
+      const errorMessage = result.error || result.message || 'Something went wrong';
+      alert('Error: ' + errorMessage);
     }
-  });
+
+  } catch (err) {
+    alert('Network or unexpected error: ' + err.message);
+    console.error(err);
+  }
+});
+
 </script>
 
   
@@ -437,184 +803,216 @@
     // Set admin name in top nav
     document.getElementById('adminName').textContent = adminName;
 
-    // Departments list element
-    const departmentList = document.getElementById('departmentList');
+    
 
-    // Add Department functionality
-    document.getElementById('addDepartmentBtn').addEventListener('click', () => {
-      const deptName = prompt("Enter new department name:");
-      if(deptName && deptName.trim().length > 0) {
-        const li = document.createElement('li');
-        li.className = "list-group-item d-flex justify-content-between align-items-center";
-        li.textContent = deptName.trim();
+const departmentList = document.getElementById('departmentList');
+const staffDepartmentSelect = document.getElementById('staffDepartment');
+const API_BASE = 'http://localhost:5000/api/departments'; // Adjust if deployed
 
-        const btnRemove = document.createElement('button');
-        btnRemove.className = "btn-icon btn-remove-dept";
-        btnRemove.title = "Remove Department";
-        btnRemove.innerHTML = "&times;";
-        btnRemove.addEventListener('click', () => li.remove());
+// Load departments from backend and display them
+async function loadDepartments() {
+  try {
+    const res = await fetch(API_BASE);
+    const departments = await res.json();
 
-        li.appendChild(btnRemove);
-        departmentList.appendChild(li);
+    departmentList.innerHTML = '';
+    staffDepartmentSelect.innerHTML = '<option value="">-- None --</option>';
 
-        // Also add to chat list
-        addChatItem(deptName.trim());
-      }
+    departments.forEach(dept => {
+      renderDepartment(dept);
+    });
+  } catch (error) {
+    console.error("Failed to load departments", error);
+  }
+}
+
+// Render a department item
+function renderDepartment(dept) {
+  const li = document.createElement('li');
+  li.className = "list-group-item d-flex justify-content-between align-items-center";
+  li.dataset.deptId = dept.id;
+
+  const span = document.createElement('span');
+  span.textContent = dept.name;
+  li.appendChild(span);
+
+  const btnGroup = document.createElement('div');
+
+  // Edit button
+  const btnEdit = document.createElement('button');
+  btnEdit.className = "btn-icon";
+  btnEdit.title = "Edit";
+  btnEdit.innerHTML = '<i class="fas fa-pen text-warning"></i>';
+  btnEdit.addEventListener('click', () => {
+    document.getElementById('editDeptName').value = dept.name;
+    document.getElementById('editDeptId').value = dept.id;
+    new bootstrap.Modal(document.getElementById('editDepartmentModal')).show();
+  });
+
+  // Assign button
+  const btnAssign = document.createElement('button');
+  btnAssign.className = "btn-icon";
+  btnAssign.title = "Assign Staff";
+  btnAssign.innerHTML = '<i class="fas fa-user-plus text-primary"></i>';
+  btnAssign.addEventListener('click', () => {
+    document.getElementById('assignDeptId').value = dept.id;
+    document.getElementById('assignEmail').value = '';
+    new bootstrap.Modal(document.getElementById('assignModal')).show();
+  });
+
+  // Delete button
+  const btnRemove = document.createElement('button');
+  btnRemove.className = "btn-icon";
+  btnRemove.title = "Delete";
+  btnRemove.innerHTML = '<i class="fas fa-trash text-danger"></i>';
+  btnRemove.addEventListener('click', async () => {
+    if (confirm(`Delete "${dept.name}"?`)) {
+      await fetch(`${API_BASE}/${dept.id}`, { method: 'DELETE' });
+      li.remove();
+    }
+  });
+
+  btnGroup.append(btnEdit, btnAssign, btnRemove);
+  li.appendChild(btnGroup);
+  departmentList.appendChild(li);
+
+  const option = document.createElement('option');
+  option.value = dept.id;
+  option.textContent = dept.name;
+  staffDepartmentSelect.appendChild(option);
+}
+
+
+// Add new department via prompt + backend
+// Handle Add Department form submission
+document.getElementById('addDepartmentForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); // Stop default form submission
+
+  // Get department name from input
+  const name = document.getElementById('newDeptName').value.trim();
+
+  // Show error if input is empty
+  if (!name) {
+    showError("Department name is required.");
+    return;
+  }
+
+  try {
+    // Send POST request to backend to add department
+    const res = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
     });
 
-    // Remove department buttons
-    departmentList.querySelectorAll('.btn-remove-dept').forEach(btn => {
-      btn.addEventListener('click', e => {
-        const li = e.target.closest('li');
-        if(li) li.remove();
-      });
+    const data = await res.json(); // Parse the JSON response
+
+    if (res.ok) {
+      // On success, add to UI and show message
+      renderDepartment(data);
+      bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
+      showSuccess("Department added successfully!");
+    } else {
+      // Handle known backend errors
+      showError(data.message || "Failed to add department.");
+    }
+  } catch (err) {
+    // Catch network or unexpected errors
+    console.error("Add department error:", err);
+    showError("Network error. Please try again.");
+  }
+});
+
+
+// Handle Edit Department form submission
+document.getElementById('editDepartmentForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); // Prevent default form submission
+
+  // Get the department ID and new name from the form
+  const id = document.getElementById('editDeptId').value;
+  const name = document.getElementById('editDeptName').value.trim();
+
+  // Exit if name is empty
+  if (!name) {
+    showError("Department name cannot be empty.");
+    return;
+  }
+
+  try {
+    // Send PUT request to update the department
+    const res = await fetch(`${API_BASE}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
     });
 
-    // Chat data - could be fetched from backend
-    let chats = [
-      { id: 'marketing', name: 'Marketing', type: 'department', messages: [
-        { sender: 'staff', text: 'Hello Marketing team!' },
-        { sender: 'admin', text: 'Hi everyone!' }
-      ]},
-      { id: 'it_support', name: 'IT Support', type: 'department', messages: [
-        { sender: 'staff', text: 'Server is down!' },
-        { sender: 'admin', text: 'Looking into it now.' }
-      ]},
-      { id: 'human_resources', name: 'Human Resources', type: 'department', messages: [
-        { sender: 'staff', text: 'Please review new policies.' },
-        { sender: 'admin', text: 'Thanks for the update.' }
-      ]},
-      { id: 'general_admin', name: 'Admin', type: 'general', messages: [
-        { sender: 'staff', text: 'Admin chat message 1.' },
-        { sender: 'admin', text: 'Thanks for the update.' }
-      ]},
-      { id: 'general_staff', name: 'Staff', type: 'general', messages: [
-        { sender: 'staff', text: 'Staff chat message 1.' },
-        { sender: 'admin', text: 'Hello Staff!' }
-      ]},
-    ];
+    // Parse JSON response
+    const data = await res.json();
 
-    // DOM references
-    const chatListEl = document.getElementById('chatList');
-    const chatHeader = document.getElementById('chatHeader');
-    const messagesContainer = document.getElementById('messagesContainer');
-    const chatForm = document.getElementById('chatForm');
-    const messageInput = document.getElementById('messageInput');
-
-    // Track currently active chat
-    let activeChatId = null;
-
-    // Function to add a chat item to left chat list
-    function addChatItem(name, id = null, type = 'department') {
-      id = id || name.toLowerCase().replace(/\s+/g, '_');
-      const li = document.createElement('li');
-      li.className = 'chat-item';
-      li.dataset.chatId = id;
-      li.textContent = name;
-      li.addEventListener('click', () => {
-        setActiveChat(id);
-      });
-      chatListEl.appendChild(li);
-      return li;
+    if (res.ok) {
+      // If successful, reload departments and hide modal
+      await loadDepartments(); // Refresh list
+      bootstrap.Modal.getInstance(document.getElementById('editDepartmentModal')).hide();
+      showSuccess("Department updated successfully!");
+    } else {
+      // If error from backend, show error message
+      showError(data.message || 'Failed to update department');
     }
+  } catch (err) {
+    // Catch network or unexpected errors
+    showError("Network error. Please try again.");
+    console.error("Update error:", err);
+  }
+});
 
-    // Populate chat list with all chats
-    function populateChatList() {
-      chatListEl.innerHTML = '';
-      chats.forEach(chat => {
-        const li = addChatItem(chat.name, chat.id, chat.type);
-        if(chat.id === activeChatId) li.classList.add('active');
-      });
-    }
 
-    // Set active chat, update UI
-    function setActiveChat(chatId) {
-      if (activeChatId === chatId) return; // already active
+// Handle Assign Staff form submission
+document.getElementById('assignForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); // Prevent default form action
 
-      activeChatId = chatId;
-      // Highlight active chat
-      [...chatListEl.children].forEach(li => {
-        li.classList.toggle('active', li.dataset.chatId === chatId);
-      });
+  // Get values from input fields
+  const email = document.getElementById('assignEmail').value.trim();
+  const department_id = document.getElementById('assignDeptId').value;
 
-      // Find chat object
-      const chat = chats.find(c => c.id === chatId);
-      if (!chat) {
-        chatHeader.textContent = 'Select a chat';
-        messagesContainer.innerHTML = '';
-        chatForm.style.display = 'none';
-        return;
-      }
+  // Basic validation
+  if (!email || !department_id) {
+    showError("Both email and department are required.");
+    return;
+  }
 
-      chatHeader.textContent = chat.name;
-      chatForm.style.display = 'flex';
-      renderMessages(chat.messages);
-
-      // Scroll to bottom
-      scrollMessagesToBottom();
-    }
-
-    // Render messages in messages container
-    function renderMessages(messages) {
-      messagesContainer.innerHTML = '';
-      messages.forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'message ' + (m.sender === 'admin' ? 'admin' : 'staff');
-        div.textContent = m.text;
-        messagesContainer.appendChild(div);
-      });
-    }
-
-    // Scroll messages to bottom
-    function scrollMessagesToBottom() {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    // Handle send message form submit
-    chatForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const text = messageInput.value.trim();
-      if(!text) return;
-
-      const chat = chats.find(c => c.id === activeChatId);
-      if (!chat) return;
-
-      // Add message as admin
-      chat.messages.push({ sender: 'admin', text });
-
-      renderMessages(chat.messages);
-      scrollMessagesToBottom();
-
-      // Clear input
-      messageInput.value = '';
-
-      // TODO: Save to backend or Firebase here
+  try {
+    // Send POST request to assign staff to department
+    const res = await fetch('/api/staff-assign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, department_id })
     });
 
-    // Initialize chat list and set default active chat
-    populateChatList();
-    if (chats.length > 0) {
-      setActiveChat(chats[0].id);
-    }
+    const data = await res.json(); // Parse response
 
-    // Add departments from initial sidebar department list to chats if missing
-    function syncDepartmentsToChats() {
-      [...departmentList.children].forEach(li => {
-        const deptName = li.firstChild.textContent.trim();
-        const deptId = deptName.toLowerCase().replace(/\s+/g, '_');
-        if(!chats.find(c => c.id === deptId)) {
-          chats.push({
-            id: deptId,
-            name: deptName,
-            type: 'department',
-            messages: []
-          });
-        }
-      });
-      populateChatList();
+    if (res.ok) {
+      showSuccess("Staff assigned successfully!");
+      bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+    } else {
+      showError(data.message || "Failed to assign staff.");
     }
+  } catch (err) {
+    console.error("Assignment error:", err);
+    showError("Network error. Please try again.");
+  }
+});
 
-    syncDepartmentsToChats();
+
+
+// On load
+loadDepartments();
+
+// Show modal when "+ Add Department" button is clicked
+document.getElementById('addDepartmentBtn').addEventListener('click', () => {
+  document.getElementById('newDeptName').value = '';
+  new bootstrap.Modal(document.getElementById('addDepartmentModal')).show();
+});
+
 
   </script>
 </body>

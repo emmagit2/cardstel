@@ -1,15 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-router.post('/login', (req, res) => {
-  const { token, role } = req.body;
+const { loginUser, checkRoleUser } = require('../controllers/authController');
 
-  // For now, just return success
-  res.json({
-    success: true,
-    message: 'Login successful',
-    role: role
-  });
-});
+router.post('/login', loginUser);
+router.post('/check-role', checkRoleUser);
 
-module.exports = router; // ✅ Export the router directly
+module.exports = router;

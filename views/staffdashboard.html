@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,6 +9,8 @@
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+
   <style>
     body, html {
       height: 100%;
@@ -16,7 +19,6 @@
       overflow: hidden;
     }
 
-    /* Top Navbar */
     #topNav {
       height: 56px;
       background-color: #1e293b;
@@ -62,7 +64,6 @@
       margin-left: 0.2rem;
     }
 
-    /* Notification Bell */
     #notificationBell {
       position: relative;
       font-size: 1.3rem;
@@ -84,7 +85,6 @@
       user-select: none;
     }
 
-    /* Sidebar */
     #sidebar {
       position: fixed;
       top: 56px;
@@ -97,7 +97,6 @@
       flex-direction: column;
       padding: 1rem;
       overflow-y: auto;
-      box-shadow: 2px 0 6px rgb(0 0 0 / 0.3);
       z-index: 999;
     }
 
@@ -134,21 +133,6 @@
       color: white;
     }
 
-    .btn-icon {
-      background: none;
-      border: none;
-      color: #93c5fd;
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 0 0.3rem;
-    }
-
-    #addDepartmentBtn {
-      width: 100%;
-      margin-top: 0.5rem;
-    }
-
-    /* Main content */
     #mainContent {
       margin-left: 260px;
       margin-top: 56px;
@@ -160,7 +144,6 @@
       overflow: hidden;
     }
 
-    /* Left chat sidebar */
     #staffList {
       width: 280px;
       background: white;
@@ -209,7 +192,6 @@
       object-fit: cover;
     }
 
-    /* Chat UI */
     #chatUI {
       flex-grow: 1;
       background: white;
@@ -269,112 +251,172 @@
       border-radius: 20px;
     }
   </style>
+
 </head>
 <body>
   <!-- Top Navbar -->
-  <nav id="topNav" class="d-flex align-items-center">
+  <nav id="topNav">
     <div class="welcome-text">Welcome, <span id="adminName">Admin</span></div>
-
     <div class="d-flex align-items-center">
-      <!-- Notification bell -->
-      <div id="notificationBell" title="Notifications">
-        <i class="fa-solid fa-bell"></i>
-        <span class="notif-badge" id="notificationCount" style="display:none">3</span>
-      </div>
-
-      <!-- Profile dropdown -->
-      <div id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" role="button">
-        <img src="https://i.pravatar.cc/36" alt="Profile Picture" />
-        <span>Admin</span>
-        <span class="caret"></span>
-      </div>
-      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown" style="min-width: 150px;">
-        <li><a class="dropdown-item" href="#" id="profileBtn">Profile</a></li>
-        <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+      <div id="notificationBell"><i class="fa-solid fa-bell"></i><span class="notif-badge" style="display:none">3</span></div>
+      <div id="profileDropdown" data-bs-toggle="dropdown"><img src="https://i.pravatar.cc/36" alt="Profile Picture"><span>Admin</span><span class="caret"></span></div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <li><a class="dropdown-item" href="#">Logout</a></li>
       </ul>
     </div>
   </nav>
 
   <!-- Sidebar -->
   <aside id="sidebar">
-    <div class="section" id="departmentsSection">
+    <div class="section">
       <h5><i class="fa-solid fa-building"></i> Departments</h5>
-      <ul class="list-group" id="departmentList">
-        <!-- Departments will load here -->
-      </ul>
-      <button class="btn btn-primary btn-sm" id="addDepartmentBtn"><i class="fa-solid fa-plus"></i> Add Department</button>
+      <ul class="list-group" id="departmentList"></ul>
+      <button class="btn btn-primary btn-sm w-100 mt-2"><i class="fa-solid fa-plus"></i> Add Department</button>
     </div>
-
-    <div class="section" id="approveMembersSection">
+    <div class="section">
       <h5><i class="fa-solid fa-user-check"></i> Approve Members <span class="notif-badge" id="unapprovedCount" style="display:none">0</span></h5>
-      <ul class="list-group" id="unapprovedMembersList">
-        <!-- Unapproved members load here -->
-      </ul>
+      <ul class="list-group" id="unapprovedMembersList"></ul>
     </div>
   </aside>
 
-  <!-- Main Content Area -->
+  <!-- Main Content -->
   <main id="mainContent">
-    <!-- Left staff list -->
     <div id="staffList">
       <h4>Staff</h4>
-      <ul id="staffListItems">
-        <li class="active"><img src="https://i.pravatar.cc/32?u=1" alt="Staff 1" /> Alice</li>
-        <li><img src="https://i.pravatar.cc/32?u=2" alt="Staff 2" /> Bob</li>
-        <li><img src="https://i.pravatar.cc/32?u=3" alt="Staff 3" /> Carol</li>
-      </ul>
+      <ul id="staffListItems"></ul>
     </div>
-
-    <!-- Chat UI -->
     <div id="chatUI">
-      <div id="chatHeader">Chat with Alice</div>
-      <div id="chatMessages">
-        <div class="chat-message">Hi Alice, how are you?</div>
-        <div class="chat-message admin">I'm good, thanks!</div>
-      </div>
-      <form id="chatForm" onsubmit="sendMessage(event)">
-        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
+      <div id="chatHeader">Chat with</div>
+      <div id="chatMessages"></div>
+      <form id="chatForm">
+        <input type="text" id="chatInput" placeholder="Type a message..." />
         <button type="submit" class="btn btn-primary">Send</button>
       </form>
     </div>
   </main>
 
-  <!-- Bootstrap & FontAwesome JS -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://kit.fontawesome.com/a2e8a45c68.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js" integrity="sha512-AI5A3zIoeRSEEX9z3Vyir8NqSMC1pY7r5h2cE+9J6FLsoEmSSGLFaqMQw8SWvoONXogkfFrkQiJfLeHLz3+HOg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  <script>
-    // Example chat send handler
-    function sendMessage(e) {
+       const firebaseConfig = {
+      apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+      authDomain: "chat-app-6776e.firebaseapp.com",
+      projectId: "chat-app-6776e",
+      storageBucket: "chat-app-6776e.firebasestorage.app",
+      messagingSenderId: "136411415099",
+      appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+      measurementId: "G-GVS3VG6Y50"
+    };
+    
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  let receiverId = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    // Get Firebase UID
+    const uid = user.uid;
+
+    // Get user token
+    const token = await user.getIdToken();
+
+    // 🔵 Fetch profile from server using UID
+    try {
+      const profile = await fetch(`/api/staff/profile?uid=${uid}`)
+        .then(res => res.json());
+
+      document.getElementById('adminName').textContent = profile.name || 'Admin';
+
+      const profileImage = document.querySelector('#profileDropdown img');
+      profileImage.src = profile.profile_picture || `https://i.pravatar.cc/36?u=${uid}`;
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    }
+
+    // Connect to socket server
+    const socket = io('http://localhost:5000', {
+      auth: { token }
+    });
+
+    socket.on('connect', () => console.log('✅ Connected to server'));
+
+    socket.on('chat message', (data) => {
+      const chatMessages = document.getElementById('chatMessages');
+      const msg = document.createElement('div');
+      msg.className = 'chat-message';
+      msg.textContent = `${data.from}: ${data.content}`;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    document.getElementById('chatForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const input = document.getElementById('chatInput');
       const msg = input.value.trim();
-      if (!msg) return;
+      if (!msg || !receiverId) return;
+
+      socket.emit('chat message', {
+        content: msg,
+        type: 'private',
+        receiverId: receiverId,
+        departmentId: null
+      });
 
       const chatMessages = document.getElementById('chatMessages');
-      const newMsg = document.createElement('div');
-      newMsg.classList.add('chat-message', 'admin');
-      newMsg.textContent = msg;
-      chatMessages.appendChild(newMsg);
+      const selfMsg = document.createElement('div');
+      selfMsg.className = 'chat-message admin';
+      selfMsg.textContent = msg;
+      chatMessages.appendChild(selfMsg);
       chatMessages.scrollTop = chatMessages.scrollHeight;
-
       input.value = '';
-    }
-
-    // Staff list click handler to change active and chat header
-    const staffItems = document.querySelectorAll('#staffListItems li');
-    staffItems.forEach(item => {
-      item.addEventListener('click', () => {
-        document.querySelector('#staffListItems li.active').classList.remove('active');
-        item.classList.add('active');
-        const name = item.textContent.trim();
-        document.getElementById('chatHeader').textContent = `Chat with ${name}`;
-
-        // Clear chat messages for demo
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = '';
-      });
     });
-  </script>
+
+    // 🔽 Fetch staff list
+    const staffList = await fetch('/api/staff/all')
+      .then(res => res.json())
+      .catch(err => {
+        console.error('Failed to fetch staff:', err);
+        return [];
+      });
+
+    const staffListContainer = document.getElementById('staffListItems');
+    staffList.forEach((staff, index) => {
+      const li = document.createElement('li');
+      li.dataset.id = staff.firebase_uid;
+      li.innerHTML = `<img src="${staff.profile_picture || 'https://i.pravatar.cc/32?u=' + staff.firebase_uid}"> ${staff.name}`;
+      if (index === 0) {
+        li.classList.add('active');
+        receiverId = staff.firebase_uid;
+        document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+      }
+
+      li.addEventListener('click', () => {
+        document.querySelector('#staffListItems li.active')?.classList.remove('active');
+        li.classList.add('active');
+        receiverId = li.dataset.id;
+        document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+        document.getElementById('chatMessages').innerHTML = '';
+      });
+
+      staffListContainer.appendChild(li);
+    });
+  });
+</script>
+
+ 
+
+
+
 </body>
 </html>

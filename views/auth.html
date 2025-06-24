@@ -22,9 +22,6 @@
       max-width: 420px;
       width: 100%;
     }
-    .form-switch .form-check-input {
-      cursor: pointer;
-    }
     .google-btn {
       background-color: #fff;
       color: #444;
@@ -60,12 +57,6 @@
   <div class="login-container">
     <h4 class="mb-4 text-center">Welcome Back</h4>
 
-    <!-- Switch toggle for role -->
-    <div class="form-check form-switch mb-4 text-end">
-      <input class="form-check-input" type="checkbox" id="roleSwitch">
-      <label class="form-check-label" for="roleSwitch">Login as Admin</label>
-    </div>
-
     <form id="loginForm">
       <div class="mb-3">
         <label for="emailInput" class="form-label">Email address</label>
@@ -75,17 +66,14 @@
         <label for="passwordInput" class="form-label">Password</label>
         <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" required />
       </div>
-      <input type="hidden" id="roleHidden" value="staff" />
       <button type="submit" class="btn btn-primary w-100">Sign In</button>
     </form>
 
-    <!-- Google login (only for admin) -->
-    <div id="googleLogin" style="display:none;">
-      <button class="google-btn" onclick="loginWithGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" />
-        Sign in with Google (Admin)
-      </button>
-    </div>
+    <!-- Google Login -->
+    <button class="google-btn" onclick="loginWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" />
+      Sign in with Google
+    </button>
 
     <div class="error-message" id="errorMsg"></div>
   </div>
@@ -94,98 +82,160 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <script>
-  const firebaseConfig = {
-  apiKey: "AIzaSyBWQoAUqsGaki3l39MkJObEXvUjvryElC8",
-  authDomain: "tryd-4dcf0.firebaseapp.com",
-  projectId: "tryd-4dcf0",
-  storageBucket: "tryd-4dcf0.firebasestorage.app",
-  messagingSenderId: "274379640767",
-  appId: "1:274379640767:web:cb74ec52b3973797ad9b0a",
-  measurementId: "G-C1LV2P9F65"
-};
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+<script>
+      const firebaseConfig = {
+      apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+      authDomain: "chat-app-6776e.firebaseapp.com",
+      projectId: "chat-app-6776e",
+      storageBucket: "chat-app-6776e.firebasestorage.app",
+      messagingSenderId: "136411415099",
+      appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+      measurementId: "G-GVS3VG6Y50"
+    };
+    
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const loginForm = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
 
-    const loginForm = document.getElementById("loginForm");
-    const roleSwitch = document.getElementById("roleSwitch");
-    const roleHidden = document.getElementById("roleHidden");
-    const errorMsg = document.getElementById("errorMsg");
-    const googleLogin = document.getElementById("googleLogin");
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.textContent = "";
 
-    // Toggle role
-    roleSwitch.addEventListener("change", () => {
-      if (roleSwitch.checked) {
-        roleHidden.value = "admin";
-        googleLogin.style.display = "block";
-      } else {
-        roleHidden.value = "staff";
-        googleLogin.style.display = "none";
-      }
-    });
+    const email = document.getElementById("emailInput").value.trim();
+    const password = document.getElementById("passwordInput").value;
 
-    // Email/Password login
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorMsg.textContent = "";
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const idToken = await userCredential.user.getIdToken();
 
-      const email = document.getElementById("emailInput").value.trim();
-      const password = document.getElementById("passwordInput").value;
-      const role = roleHidden.value;
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: idToken })
+      });
 
-      try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const idToken = await userCredential.user.getIdToken();
+      const result = await response.json();
 
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: idToken, role })
-        });
+      if (response.ok && result.success) {
+        const role = result.user.role;
 
-        const result = await response.json();
-        console.log(result)
-
-        if (response.ok && result.success) {
-          window.location.href = role === 'admin' ? "/admin2.html" : "/staff-dashboard.html";
+        if (role === "superadmin") {
+          window.location.href = "/admin2.html";
+        } else if (role === "admin") {
+          window.location.href = "/admin.html";
+        } else if (role === "staff") {
+          window.location.href = "/staffdashboard.html";
         } else {
-          errorMsg.textContent = result.message || "Access denied.";
+          errorMsg.textContent = "Invalid user role.";
         }
-
-      } catch (error) {
-        console.error(error);
-        errorMsg.textContent = error.message;
+      } else {
+        errorMsg.textContent = result.message || "Login failed.";
       }
-    });
 
-    // Google login for admins only
-    async function loginWithGoogle() {
-      const role = "admin"; // Forced for Google login
-      const provider = new firebase.auth.GoogleAuthProvider();
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = error.message;
+    }
+  });
 
-      try {
+  window.loginWithGoogle = async function() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (currentUser) {
+        // Try to link Google provider to current user
+        try {
+          const linkResult = await currentUser.linkWithPopup(provider);
+          const idToken = await linkResult.user.getIdToken();
+          await sendTokenToBackend(idToken);
+        } catch (linkError) {
+          if (linkError.code === 'auth/credential-already-in-use') {
+            // Google account linked to another user - sign in directly
+            const result = await auth.signInWithPopup(provider);
+            const idToken = await result.user.getIdToken();
+            await sendTokenToBackend(idToken);
+          } else if (linkError.code === 'auth/provider-already-linked') {
+            // Google provider already linked to current user
+            const idToken = await currentUser.getIdToken();
+            await sendTokenToBackend(idToken);
+          } else {
+            throw linkError;
+          }
+        }
+      } else {
+        // No user signed in, normal Google sign-in
         const result = await auth.signInWithPopup(provider);
         const idToken = await result.user.getIdToken();
+        await sendTokenToBackend(idToken);
+      }
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = error.message;
+    }
+  };
 
-        const response = await fetch("/api/auth/login", {
+  async function sendTokenToBackend(idToken) {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: idToken })
+      });
+
+      const resJson = await response.json();
+
+      if (response.ok && resJson.success) {
+        const role = resJson.user.role;
+
+        if (role === "superadmin") {
+          window.location.href = "/admin2.html";
+        } else if (role === "admin") {
+          window.location.href = "/admin.html";
+        } else if (role === "staff") {
+          window.location.href = "/staffdashboard.html";
+        } else {
+          errorMsg.textContent = "Invalid user role.";
+        }
+      } else {
+        errorMsg.textContent = resJson.message || "Google sign-in failed.";
+      }
+    } catch (err) {
+      console.error(err);
+      errorMsg.textContent = "Network error during sign-in.";
+    }
+  }
+
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      user.getIdToken().then((idToken) => {
+        fetch("/api/auth/check-role", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: idToken, role })
+          body: JSON.stringify({ token: idToken })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const role = data.user.role;
+            if (role === "superadmin") {
+              window.location.href = "/admin2.html";
+            } else if (role === "admin") {
+              window.location.href = "/admin.html";
+            } else if (role === "staff") {
+              window.location.href = "/staffdashboard.html";
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Check role error:", err);
         });
-
-        const resJson = await response.json();
-
-        if (response.ok && resJson.success) {
-          window.location.href = "/admin2.html";
-        } else {
-          errorMsg.textContent = resJson.message || "Google sign-in failed.";
-        }
-
-      } catch (error) {
-        console.error(error);
-        errorMsg.textContent = error.message;
-      }
+      });
     }
-  </script>
+  });
+</script>
+
 </body>
 </html>

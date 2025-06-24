@@ -1,25 +1,44 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const path = require('path');
 const bodyParser = require('body-parser');
+const { Server } = require('socket.io');
 
-const authRoutes = require('./routes/authRoutes'); // ✅ should export an Express Router
+const authRoutes = require('./routes/authRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
+const staffRoutes = require('./routes/staffRoutes');
+
+const initChatSocket = require('./sockets/chatSocket');
 
 const app = express();
-const PORT = 5000;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
 
+// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // serve static files like CSS
+app.use(express.static('public'));
 
-// Use routes
-app.use('/api/auth', authRoutes); // ✅ correct usage
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/staff', staffRoutes);
 
-// Serve HTML views
-const path = require('path');
+// Views
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views/auth.html')));
 app.get('/admin2.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin2.html')));
-app.get('/staff-dashboard', (req, res) => res.sendFile(path.join(__dirname, 'views/staffDashboard.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin.html')));
+app.get('/staff-register', (req, res) => res.sendFile(path.join(__dirname, 'views/staffRegister.html')));
+app.get('/staffdashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'views/staffDashboard.html')));
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// 🔌 Initialize Socket.IO logic
+initChatSocket(io);
+
+// Start server
+const PORT = 5000;
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
