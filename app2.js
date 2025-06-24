@@ -32,7 +32,7 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views/auth.ht
 app.get('/admin2.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin2.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin.html')));
 app.get('/staff-register', (req, res) => res.sendFile(path.join(__dirname, 'views/staffRegister.html')));
-app.get('/staffdashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'views/staffDashboard.html')));
+app.get('/staffdashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'views/staffdashboard.html')));
 
 // 🔌 Initialize Socket.IO logic
 initChatSocket(io);

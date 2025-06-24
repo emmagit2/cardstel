@@ -436,18 +436,7 @@
       <h5>Departments</h5>
       <ul id="departmentList" class="list-group list-group-flush">
         <!-- Sample departments -->
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          Marketing
-          <button class="btn-icon btn-remove-dept" title="Remove Department">&times;</button>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          IT Support
-          <button class="btn-icon btn-remove-dept" title="Remove Department">&times;</button>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          Human Resources
-          <button class="btn-icon btn-remove-dept" title="Remove Department">&times;</button>
-        </li>
+     
       </ul>
       <button id="addDepartmentBtn" class="btn btn-primary btn-sm mt-2">+ Add Department</button>
     </div>
@@ -481,7 +470,7 @@
   <div class="chat-group">
     <label>Departments</label>
     <input type="text" class="searchInput" data-target="departmentList" placeholder="Search departments..." />
-    <ul id="departmentList" class="chatListGroup">
+    <ul id="departmentLists" class="chatListGroup">
       <li>HR</li>
       <li>Finance</li>
       <li>Engineering</li>
@@ -802,15 +791,11 @@ async function populateDepartmentDropdown() {
 
     // Set admin name in top nav
     document.getElementById('adminName').textContent = adminName;
-
-    
-
 const staffDepartmentSelect = document.getElementById('staffDepartment');
 const departmentList = document.getElementById('departmentList');
-const staffDepartmentSelect = document.getElementById('staffDepartment');
 
 const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000/api/departments'
+  ? 'http://localhost:5000/api/departments'
   : 'https://cardstel.onrender.com/api/departments';
 
 // Load departments from backend and display them
@@ -819,22 +804,19 @@ async function loadDepartments() {
     const res = await fetch(API_BASE);
     const departments = await res.json();
 
-    // Example rendering logic here
-    departments.forEach(dep => {
-      const option = document.createElement('option');
-      option.value = dep.id;
-      option.textContent = dep.name;
-      staffDepartmentSelect.appendChild(option);
-    });
+    // Clear previous content
+    staffDepartmentSelect.innerHTML = '';
+    departmentList.innerHTML = '';
 
+    departments.forEach(dep => renderDepartment(dep));
   } catch (err) {
     console.error('Failed to load departments:', err);
   }
 }
 
-
-// Render a department item
+// Render a department item into both the list and dropdown
 function renderDepartment(dept) {
+  // Create list item
   const li = document.createElement('li');
   li.className = "list-group-item d-flex justify-content-between align-items-center";
   li.dataset.deptId = dept.id;
@@ -874,8 +856,14 @@ function renderDepartment(dept) {
   btnRemove.innerHTML = '<i class="fas fa-trash text-danger"></i>';
   btnRemove.addEventListener('click', async () => {
     if (confirm(`Delete "${dept.name}"?`)) {
-      await fetch(`${API_BASE}/${dept.id}`, { method: 'DELETE' });
-      li.remove();
+      try {
+        await fetch(`${API_BASE}/${dept.id}`, { method: 'DELETE' });
+        li.remove();
+        const optionToRemove = staffDepartmentSelect.querySelector(`option[value="${dept.id}"]`);
+        if (optionToRemove) optionToRemove.remove();
+      } catch (err) {
+        console.error('Error deleting department:', err);
+      }
     }
   });
 
@@ -883,119 +871,86 @@ function renderDepartment(dept) {
   li.appendChild(btnGroup);
   departmentList.appendChild(li);
 
+  // Add to dropdown
   const option = document.createElement('option');
   option.value = dept.id;
   option.textContent = dept.name;
   staffDepartmentSelect.appendChild(option);
 }
 
-
-// Add new department via prompt + backend
-// Handle Add Department form submission
+// Add new department
 document.getElementById('addDepartmentForm').addEventListener('submit', async function (e) {
-  e.preventDefault(); // Stop default form submission
-
-  // Get department name from input
+  e.preventDefault();
   const name = document.getElementById('newDeptName').value.trim();
-
-  // Show error if input is empty
-  if (!name) {
-    showError("Department name is required.");
-    return;
-  }
+  if (!name) return showError("Department name is required.");
 
   try {
-    // Send POST request to backend to add department
     const res = await fetch(API_BASE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
 
-    const data = await res.json(); // Parse the JSON response
+    const data = await res.json();
 
     if (res.ok) {
-      // On success, add to UI and show message
       renderDepartment(data);
       bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
       showSuccess("Department added successfully!");
     } else {
-      // Handle known backend errors
       showError(data.message || "Failed to add department.");
     }
   } catch (err) {
-    // Catch network or unexpected errors
     console.error("Add department error:", err);
     showError("Network error. Please try again.");
   }
 });
 
-
-// Handle Edit Department form submission
+// Edit department
 document.getElementById('editDepartmentForm').addEventListener('submit', async function (e) {
-  e.preventDefault(); // Prevent default form submission
-
-  // Get the department ID and new name from the form
+  e.preventDefault();
   const id = document.getElementById('editDeptId').value;
   const name = document.getElementById('editDeptName').value.trim();
-
-  // Exit if name is empty
-  if (!name) {
-    showError("Department name cannot be empty.");
-    return;
-  }
+  if (!name) return showError("Department name cannot be empty.");
 
   try {
-    // Send PUT request to update the department
     const res = await fetch(`${API_BASE}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
 
-    // Parse JSON response
     const data = await res.json();
 
     if (res.ok) {
-      // If successful, reload departments and hide modal
-      await loadDepartments(); // Refresh list
+      await loadDepartments();
       bootstrap.Modal.getInstance(document.getElementById('editDepartmentModal')).hide();
       showSuccess("Department updated successfully!");
     } else {
-      // If error from backend, show error message
       showError(data.message || 'Failed to update department');
     }
   } catch (err) {
-    // Catch network or unexpected errors
-    showError("Network error. Please try again.");
     console.error("Update error:", err);
+    showError("Network error. Please try again.");
   }
 });
 
-
-// Handle Assign Staff form submission
+// Assign staff
 document.getElementById('assignForm').addEventListener('submit', async function (e) {
-  e.preventDefault(); // Prevent default form action
-
-  // Get values from input fields
+  e.preventDefault();
   const email = document.getElementById('assignEmail').value.trim();
   const department_id = document.getElementById('assignDeptId').value;
 
-  // Basic validation
-  if (!email || !department_id) {
-    showError("Both email and department are required.");
-    return;
-  }
+  if (!email || !department_id) return showError("Both email and department are required.");
 
   try {
-    // Send POST request to assign staff to department
     const res = await fetch('/api/staff-assign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, department_id })
     });
 
-    const data = await res.json(); // Parse response
+    const data = await res.json();
 
     if (res.ok) {
       showSuccess("Staff assigned successfully!");
@@ -1009,16 +964,17 @@ document.getElementById('assignForm').addEventListener('submit', async function 
   }
 });
 
-
-
-// On load
-loadDepartments();
-
-// Show modal when "+ Add Department" button is clicked
+// Show Add Department modal
 document.getElementById('addDepartmentBtn').addEventListener('click', () => {
   document.getElementById('newDeptName').value = '';
   new bootstrap.Modal(document.getElementById('addDepartmentModal')).show();
 });
+
+// Init
+window.addEventListener('DOMContentLoaded', loadDepartments);
+
+
+
 
 
   </script>
