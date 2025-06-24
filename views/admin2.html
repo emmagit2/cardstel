@@ -807,7 +807,7 @@ async function populateDepartmentDropdown() {
 
 const departmentList = document.getElementById('departmentList');
 const staffDepartmentSelect = document.getElementById('staffDepartment');
-const API_BASE = 'https://cardstel.onrender.com/api/departments'; // Adjust if deployed
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:3000/api/departments';
 
 // Load departments from backend and display them
 async function loadDepartments() {

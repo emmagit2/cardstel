@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 // === Admin Sends Invite ===
+
+// === Admin Sends Invite ===
 exports.sendInvite = async (req, res) => {
   const { email, role, department_id } = req.body;
 
@@ -29,16 +31,17 @@ exports.sendInvite = async (req, res) => {
       `, [email, role, department_id || null, token, 1]);
     }
 
-    const link = `http://localhost:5000/staff-register?token=${token}`;
+    // ✅ Dynamically use local or hosted BASE_URL
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const link = `${baseUrl}/staff-register?token=${token}`;
 
-    // Set up Gmail transporter
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
       secure: false,
       auth: {
         user: 'basseyanikan22@gmail.com',
-        pass: 'eeef bsly lemd irge' // App password from Gmail
+        pass: 'eeef bsly lemd irge' // App password
       }
     });
 
