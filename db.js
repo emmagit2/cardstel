@@ -1,13 +1,14 @@
 // db.js
 const { Pool } = require('pg');
 
-// You can also load from environment variables using dotenv
+// Load environment variables from .env if running locally
+require('dotenv').config();
+
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'mychatapp',   // your database name
-  password: '123', // replace with your postgres password
-  port: 5432,
+  connectionString: process.env.DATABASE_URL || 'postgres://postgres:123@localhost:5432/mychatapp',
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
 module.exports = pool;
