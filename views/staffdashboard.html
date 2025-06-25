@@ -303,16 +303,15 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-       const firebaseConfig = {
-      apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
-      authDomain: "chat-app-6776e.firebaseapp.com",
-      projectId: "chat-app-6776e",
-      storageBucket: "chat-app-6776e.firebasestorage.app",
-      messagingSenderId: "136411415099",
-      appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
-      measurementId: "G-GVS3VG6Y50"
-    };
-    
+  const firebaseConfig = {
+    apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+    authDomain: "chat-app-6776e.firebaseapp.com",
+    projectId: "chat-app-6776e",
+    storageBucket: "chat-app-6776e.firebasestorage.app",
+    messagingSenderId: "136411415099",
+    appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+    measurementId: "G-GVS3VG6Y50"
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -325,13 +324,9 @@
       return;
     }
 
-    // Get Firebase UID
     const uid = user.uid;
-
-    // Get user token
     const token = await user.getIdToken();
 
-    // 🔵 Fetch profile from server using UID
     try {
       const profile = await fetch(`/api/staff/profile?uid=${uid}`)
         .then(res => res.json());
@@ -344,7 +339,6 @@
       console.error('Error fetching profile:', err);
     }
 
-    // Connect to socket server
     const socket = io('http://localhost:5000', {
       auth: { token }
     });
@@ -355,7 +349,7 @@
       const chatMessages = document.getElementById('chatMessages');
       const msg = document.createElement('div');
       msg.className = 'chat-message';
-      msg.textContent = `${data.from}: ${data.content}`;
+      msg.textContent = `${data.sender_id}: ${data.content}`;
       chatMessages.appendChild(msg);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     });
@@ -369,7 +363,7 @@
       socket.emit('chat message', {
         content: msg,
         type: 'private',
-        receiverId: receiverId,
+        receiver_id: receiverId,  // numeric id now
         departmentId: null
       });
 
@@ -382,7 +376,6 @@
       input.value = '';
     });
 
-    // 🔽 Fetch staff list
     const staffList = await fetch('/api/staff/all')
       .then(res => res.json())
       .catch(err => {
@@ -393,18 +386,19 @@
     const staffListContainer = document.getElementById('staffListItems');
     staffList.forEach((staff, index) => {
       const li = document.createElement('li');
-      li.dataset.id = staff.firebase_uid;
+      li.dataset.id = staff.id;  // <-- use numeric DB id here
       li.innerHTML = `<img src="${staff.profile_picture || 'https://i.pravatar.cc/32?u=' + staff.firebase_uid}"> ${staff.name}`;
+
       if (index === 0) {
         li.classList.add('active');
-        receiverId = staff.firebase_uid;
+        receiverId = staff.id;  // <-- use numeric DB id here
         document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
       }
 
       li.addEventListener('click', () => {
         document.querySelector('#staffListItems li.active')?.classList.remove('active');
         li.classList.add('active');
-        receiverId = li.dataset.id;
+        receiverId = li.dataset.id;  // <-- numeric DB id again
         document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
         document.getElementById('chatMessages').innerHTML = '';
       });
@@ -414,7 +408,6 @@
   });
 </script>
 
- 
 
 
 

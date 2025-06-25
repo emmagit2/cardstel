@@ -1,5 +1,5 @@
 // sockets/chatSocket.js
-const admin  = require('../firebase/firebaseConfig');
+const {admin } = require('../firebase/firebaseConfig');
 const db = require('../db');
 
 module.exports = function (io) {

@@ -147,12 +147,11 @@ exports.getStaffProfile = async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 };
-
 // === Get All Staff Members ===
 exports.getAllStaff = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT firebase_uid, name, profile_picture FROM users WHERE role = $1',
+      'SELECT id, firebase_uid, name, profile_picture FROM users WHERE role = $1',
       ['staff']
     );
     res.json(result.rows);
@@ -161,3 +160,4 @@ exports.getAllStaff = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
