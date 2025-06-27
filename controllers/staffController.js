@@ -151,7 +151,7 @@ exports.getStaffProfile = async (req, res) => {
 exports.getAllStaff = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, firebase_uid, name, profile_picture FROM users WHERE role = $1',
+      'SELECT id, firebase_uid, name, profile_picture, role FROM users WHERE role = $1',
       ['staff']
     );
     res.json(result.rows);

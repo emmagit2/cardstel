@@ -19,20 +19,27 @@
       overflow: hidden;
     }
 
-    #topNav {
-      height: 56px;
-      background-color: #1e293b;
-      color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-    }
+  #topNav {
+  width: 80%;
+  margin: 0 auto;
+  height: 56px;
+  background-color: transparent; /* no background */
+  border-bottom: 1px solid #ddd; /* subtle bottom border */
+  color: #1e293b; /* dark text color */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;  /* needed to center with margin auto */
+  right: 0;
+  z-index: 1000;
+  border-radius: 0 0 3px 3px; /* optional: rounded bottom corners */
+  backdrop-filter: blur(8px); /* optional: nice subtle blur if transparent */
+  -webkit-backdrop-filter: blur(8px);
+}
+
 
     #topNav .welcome-text {
       font-weight: 600;
@@ -85,27 +92,6 @@
       user-select: none;
     }
 
-    #sidebar {
-      position: fixed;
-      top: 56px;
-      left: 0;
-      bottom: 0;
-      width: 260px;
-      background-color: #111827;
-      color: #e0e7ff;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-      overflow-y: auto;
-      z-index: 999;
-    }
-
-    #sidebar h5 {
-      margin-bottom: 0.75rem;
-      font-weight: 700;
-      border-bottom: 1px solid #374151;
-      padding-bottom: 0.3rem;
-    }
 
     .section {
       margin-bottom: 2rem;
@@ -134,7 +120,7 @@
     }
 
     #mainContent {
-      margin-left: 260px;
+     margin-left: 150px;
       margin-top: 56px;
       padding: 1.5rem;
       height: calc(100vh - 56px);
@@ -192,107 +178,236 @@
       object-fit: cover;
     }
 
-    #chatUI {
-      flex-grow: 1;
-      background: white;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-      overflow: hidden;
-    }
+#chatUI {
+  width: 100%;
+  max-width: 720px; /* make it more compact */
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: 100%;
+}
 
-    #chatHeader {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      font-weight: 600;
-      background-color: #2563eb;
-      color: white;
-    }
+#chatHeader {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 600;
+  background-color: #2563eb;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
 
-    #chatMessages {
-      flex-grow: 1;
-      padding: 1rem;
-      overflow-y: auto;
-      background-color: #f9fafb;
-    }
+#chatMessages {
+  flex-grow: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f9fafb;
+}
 
-    .chat-message {
-      margin-bottom: 1rem;
-      max-width: 70%;
-      padding: 0.5rem 1rem;
-      border-radius: 15px;
-      background-color: #e0e7ff;
-    }
+/* Message styling */
+.chat-message {
+  margin-bottom: 1rem;
+  max-width: 70%;
+  padding: 0.6rem 1rem;
+  border-radius: 18px;
+  background-color: #e0e7ff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
 
-    .chat-message.admin {
-      background-color: #2563eb;
-      color: white;
-      margin-left: auto;
-    }
+.chat-message.admin {
+  background-color: #2563eb;
+  color: white;
+  margin-left: auto;
+}
 
-    #chatForm {
-      border-top: 1px solid #ddd;
-      padding: 0.5rem 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
+/* Chat Form Layout */
+#chatForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+}
 
-    #chatForm input[type="text"] {
-      flex-grow: 1;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
+/* Icons to the left of input */
+#chatForm .icon-left {
+  font-size: 1.2rem;
+  color: #64748b;
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
 
-    #chatForm button {
-      padding: 0 1.5rem;
-      border-radius: 20px;
-    }
+/* Input with mic icon inside */
+#chatInputWrapper {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#chatInput {
+  width: 100%;
+  border: none;
+  padding: 0.6rem 2.5rem 0.6rem 1rem;
+  border-radius: 25px;
+  background-color: #f1f5f9;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+#chatInput:focus {
+  background-color: #e2e8f0;
+}
+
+/* Mic icon inside input */
+#chatInputWrapper i.fa-microphone {
+  position: absolute;
+  right: 12px;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* Send button */
+#chatForm button {
+  background-color: #2563eb;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  transition: background-color 0.2s;
+}
+
+#chatForm button:hover {
+  background-color: #1e40af;
+}
+
+
   </style>
 
 </head>
 <body>
   <!-- Top Navbar -->
-  <nav id="topNav">
-    <div class="welcome-text">Welcome, <span id="adminName">Admin</span></div>
-    <div class="d-flex align-items-center">
-      <div id="notificationBell"><i class="fa-solid fa-bell"></i><span class="notif-badge" style="display:none">3</span></div>
-      <div id="profileDropdown" data-bs-toggle="dropdown"><img src="https://i.pravatar.cc/36" alt="Profile Picture"><span>Admin</span><span class="caret"></span></div>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="#">Profile</a></li>
-        <li><a class="dropdown-item" href="#">Logout</a></li>
-      </ul>
-    </div>
-  </nav>
+<nav id="topNav" class=" border-bottom bg-white w-60 d-flex justify-content-center">
+  <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 80%; padding: 0.75rem 1rem;">
+    <div class="welcome-text fw-semibold fs-6 text-dark">Welcome, <span id="adminName">Admin</span></div>
 
-  <!-- Sidebar -->
-  <aside id="sidebar">
-    <div class="section">
-      <h5><i class="fa-solid fa-building"></i> Departments</h5>
-      <ul class="list-group" id="departmentList"></ul>
-      <button class="btn btn-primary btn-sm w-100 mt-2"><i class="fa-solid fa-plus"></i> Add Department</button>
+    <div class="d-flex align-items-center gap-3">
+      <!-- Notification Bell -->
+      <div id="notificationBell" class="position-relative">
+        <i class="fa-solid fa-bell fs-5 text-dark"></i>
+        <span class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">3</span>
+      </div>
+
+      <!-- Profile Dropdown -->
+      <div class="dropdown">
+        <div id="profileDropdown" class="d-flex align-items-center gap-2 text-dark" data-bs-toggle="dropdown" style="cursor: pointer;">
+          <img src="https://i.pravatar.cc/36" alt="Profile Picture" class="rounded-circle border" width="36" height="36">
+          <span class="fw-semibold">Admin</span>
+          <i class="fa-solid fa-caret-down text-dark"></i> <!-- black dropdown arrow -->
+        </div>
+
+        <!-- Dropdown Menu -->
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-user text-primary"></i> Profile
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-right-from-bracket text-danger"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="section">
-      <h5><i class="fa-solid fa-user-check"></i> Approve Members <span class="notif-badge" id="unapprovedCount" style="display:none">0</span></h5>
-      <ul class="list-group" id="unapprovedMembersList"></ul>
-    </div>
-  </aside>
+  </div>
+</nav>
+
+
 
   <!-- Main Content -->
   <main id="mainContent">
-    <div id="staffList">
-      <h4>Staff</h4>
-      <ul id="staffListItems"></ul>
+  <!-- Staff Sidebar Card -->
+<div class="card shadow-sm rounded-4" style="width: 100%; max-width: 320px; height: 100%; background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); overflow-y: auto;">
+  <div class="card-body p-3">
+
+    <!-- Departments (Collapsible) -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#departmentCollapse" aria-expanded="true">
+        <h6 class="text-uppercase fw-bold text-dark mb-0">Departments</h6>
+        <i class="fa fa-chevron-down text-muted small"></i>
+      </div>
+      <ul id="departmentCollapse" class="collapse show list-unstyled" style="max-height: 160px; overflow-y: auto;">
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">IT Department</span>
+        </li>
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">HR</span>
+        </li>
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">Marketing</span>
+        </li>
+      </ul>
     </div>
+
+    <!-- Staff (Collapsible) -->
+    <div>
+      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#staffCollapse" aria-expanded="true">
+        <h6 class="text-uppercase fw-bold text-dark mb-0">Staff</h6>
+        <i class="fa fa-chevron-down text-muted small"></i>
+      </div>
+      <div id="staffCollapse" class="collapse show">
+        <input type="text" id="staffSearch" class="form-control form-control-sm mb-3" placeholder="Search staff...">
+        <ul class="list-unstyled" id="staffListItems" style="max-height: 300px; overflow-y: auto;">
+          <!-- Staff dynamically added via JS -->
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
     <div id="chatUI">
       <div id="chatHeader">Chat with</div>
       <div id="chatMessages"></div>
-      <form id="chatForm">
+      <!-- <form id="chatForm">
         <input type="text" id="chatInput" placeholder="Type a message..." />
         <button type="submit" class="btn btn-primary">Send</button>
-      </form>
+      </form> -->
+
+      <form id="chatForm">
+  <!-- Left icons -->
+  <i class="fa fa-paperclip icon-left"></i>
+  <i class="fa fa-smile icon-left"></i>
+
+  <!-- Input wrapper with mic inside -->
+  <div id="chatInputWrapper">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <i class="fa fa-microphone"></i>
+  </div>
+
+  <!-- Send button -->
+  <button type="submit"><i class="fa fa-paper-plane"></i></button>
+</form>
+
     </div>
   </main>
 
@@ -363,7 +478,7 @@
       socket.emit('chat message', {
         content: msg,
         type: 'private',
-        receiver_id: receiverId,  // numeric id now
+        receiver_id: receiverId,
         departmentId: null
       });
 
@@ -376,37 +491,56 @@
       input.value = '';
     });
 
-    const staffList = await fetch('/api/staff/all')
-      .then(res => res.json())
-      .catch(err => {
-        console.error('Failed to fetch staff:', err);
-        return [];
+    // ✅ Fetch and Render Staff List
+    try {
+      const staffList = await fetch('/api/staff/all')
+        .then(res => res.json());
+
+      const staffListContainer = document.getElementById('staffListItems');
+      staffList.forEach((staff, index) => {
+        const li = document.createElement('li');
+        li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
+        li.style.cursor = 'pointer';
+        li.dataset.id = staff.id;
+
+        // Decode Buffer path to string
+        let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
+        if (staff.profile_picture?.data) {
+          const bufferData = staff.profile_picture.data;
+          const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
+          profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+        }
+
+        li.innerHTML = `
+          <div class="d-flex align-items-center gap-2">
+            <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+            <div class="text-dark fw-semibold">${staff.name}</div>
+          </div>
+          <div class="text-success"><i class="fa-solid fa-circle fa-xs"></i></div>
+        `;
+
+        if (index === 0) {
+          li.classList.add('active');
+          receiverId = staff.id;
+          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+        }
+
+        li.addEventListener('click', () => {
+          document.querySelector('#staffListItems li.active')?.classList.remove('active');
+          li.classList.add('active');
+          receiverId = li.dataset.id;
+          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+          document.getElementById('chatMessages').innerHTML = '';
+        });
+
+        staffListContainer.appendChild(li);
       });
-
-    const staffListContainer = document.getElementById('staffListItems');
-    staffList.forEach((staff, index) => {
-      const li = document.createElement('li');
-      li.dataset.id = staff.id;  // <-- use numeric DB id here
-      li.innerHTML = `<img src="${staff.profile_picture || 'https://i.pravatar.cc/32?u=' + staff.firebase_uid}"> ${staff.name}`;
-
-      if (index === 0) {
-        li.classList.add('active');
-        receiverId = staff.id;  // <-- use numeric DB id here
-        document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
-      }
-
-      li.addEventListener('click', () => {
-        document.querySelector('#staffListItems li.active')?.classList.remove('active');
-        li.classList.add('active');
-        receiverId = li.dataset.id;  // <-- numeric DB id again
-        document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
-        document.getElementById('chatMessages').innerHTML = '';
-      });
-
-      staffListContainer.appendChild(li);
-    });
+    } catch (err) {
+      console.error('Failed to fetch staff:', err);
+    }
   });
 </script>
+
 
 
 

@@ -16,23 +16,101 @@
       overflow: hidden;
       background: #f1f5f9;
     }
-
-    /* Top Navbar */
-    #topNav {
-      height: 56px;
-      background-color: #1e293b;
-      color: #f1f5f9;
+    
+    body {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1050;
     }
+
+    #sidebar {
+      width: 120px;
+      background-color: #ffffff;
+      padding: 1rem;
+      border-right: 1px solid rgba(0, 0, 0, 0.663);
+      height: 100vh;
+      
+      overflow-y: auto;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      margin-top: 5%;
+    }
+
+    #mainContent {
+      display: flex;
+      flex-grow: 1;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #chatListContainer {
+      width: 300px;
+      padding: 1rem;
+      border-right: 1px solid #dee2e6;
+      overflow-y: auto;
+    }
+
+    .chat-group {
+      display: none;
+    }
+
+    .chat-group.active {
+      display: block;
+    }
+
+    #chatUI {
+      padding: 1rem;
+      margin-top: 10%;
+      display: flex;
+      flex-direction: column;
+      height: 50%;
+    }
+
+    #messagesContainer {
+      flex-grow: 1;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chatListGroup {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .chatListGroup li {
+      padding: 5px 0;
+    }
+
+    .list-group-item {
+      cursor: pointer;
+    }
+
+    .list-group-item:hover {
+      background-color: #e9ecef;
+    }
+
+  #topNav {
+  width: 80%;
+  margin: 0 auto;
+  height: 56px;
+  background-color: transparent; /* no background */
+  border-bottom: 1px solid #ddd; /* subtle bottom border */
+  color: #1e293b; /* dark text color */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  position: fixed;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+  top: 0;
+  left: 0;  /* needed to center with margin auto */
+  right: 0;
+  z-index: 1000;
+  border-radius:25px; /* optional: rounded bottom corners */
+  backdrop-filter: blur(8px); /* optional: nice subtle blur if transparent */
+  -webkit-backdrop-filter: blur(8px);
+}
+
 
     #topNav .welcome-text {
       font-weight: 600;
@@ -47,22 +125,6 @@
       gap: 0.5rem;
       user-select: none;
       position: relative;
-    }
-
-    /* Notification badge before avatar */
-    #profileDropdown .notif-badge {
-      position: absolute;
-      top: 0;
-      right: 32px;
-      background-color: #ef4444;
-      color: white;
-      border-radius: 50%;
-      font-size: 0.7rem;
-      padding: 3px 6px;
-      font-weight: 700;
-      user-select: none;
-      transform: translate(50%, -50%);
-      box-shadow: 0 0 4px rgba(0,0,0,0.4);
     }
 
     #profileDropdown img {
@@ -80,90 +142,37 @@
       margin-left: 0.2rem;
     }
 
-    /* Sidebar */
-    #sidebar {
-      position: fixed;
-      top: 56px;
-      left: 0;
-      bottom: 0;
-      width: 260px;
-      background-color: #111827;
-      color: #e0e7ff;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-      overflow-y: auto;
-      box-shadow: 2px 0 6px rgb(0 0 0 / 0.3);
-      z-index: 1020;
-    }
-
-    #sidebar h5 {
-      margin-bottom: 0.75rem;
-      font-weight: 700;
-      border-bottom: 1px solid #374151;
-      padding-bottom: 0.3rem;
-    }
-
-    .section {
-      margin-bottom: 2rem;
-    }
-
-    .list-group-item {
-      background: transparent;
-      border: none;
-      color: #cbd5e1;
-      padding-left: 0;
+    #notificationBell {
+      position: relative;
+      font-size: 1.3rem;
+      margin-right: 1rem;
       cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background-color 0.2s ease;
-      border-radius: 6px;
+      color: #f1f5f9;
     }
 
-    .list-group-item:hover {
-      background-color: #374151;
-    }
-
-    .list-group-item.active {
-      background-color: #2563eb;
+    .notif-badge {
+      background-color: #ef4444;
       color: white;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      font-weight: 700;
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      user-select: none;
     }
-
-    .btn-icon {
-      background: none;
-      border: none;
-      color: #93c5fd;
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 0 0.3rem;
-    }
-
-    #addDepartmentBtn {
-      width: 100%;
-      margin-top: 0.5rem;
-    }
-
-    /* Main Content Area - Split chat list and chat UI */
-    #mainContent {
-      margin-left: 260px;
-      padding: 1rem;
-      height: calc(100vh - 56px);
-      display: flex;
-      gap: 1rem;
-      padding-top: 5%;
-      overflow: hidden;
-    }
-
     /* Left: Chat List */
     #chatListContainer {
-      width: 300px;
+      width: 350px;
+      margin: 5% 5px;
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      height: 90%
     }
 
     #chatListContainer h5 {
@@ -203,183 +212,131 @@
       font-weight: 600;
     }
 
-    /* Right: Chat UI */
-    #chatUI {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-      overflow: hidden;
-    }
-
-    #chatUI header {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      font-weight: 600;
-      background-color: #f9fafb;
-    }
-
-    #messagesContainer {
-      flex: 1;
-      padding: 1rem;
-      overflow-y: auto;
-      background: #f9fafb;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
-
-    #messagesContainer .message {
-      margin-bottom: 0.8rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 15px;
-      max-width: 75%;
-      word-wrap: break-word;
-      clear: both;
-    }
-
-    #messagesContainer .message.admin {
-      background-color: #2563eb;
-      color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 3px;
-    }
-
-    #messagesContainer .message.staff {
-      background-color: #e0e7ff;
-      color: #1e293b;
-      margin-right: auto;
-      border-bottom-left-radius: 3px;
-    }
-
-    #chatForm {
-      display: flex;
-      padding: 0.5rem 1rem;
-      border-top: 1px solid #ddd;
-      background-color: #f9fafb;
-      gap: 0.5rem;
-    }
-
-    #messageInput {
-      flex: 1;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    #messageInput:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
-    }
-
-    #sendBtn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      padding: 0 1.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.2s ease;
-    }
-
-    #sendBtn:hover {
-      background-color: #1e40af;
-    }
-/* Layout */
-#mainContent {
-  display: flex;
-  height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-#chatListContainer {
-  width: 280px;
-  background: #f7f7f7;
-  border-right: 1px solid #ddd;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-#chatListContainer h3 {
-  margin-bottom: 12px;
-}
-
-#chatSearch {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.chat-group details summary {
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-  margin-bottom: 5px;
-}
-
-.chatListGroup {
-  list-style: none;
-  padding-left: 10px;
-}
-
-.chatListGroup li {
-  padding: 8px 10px;
-  margin-bottom: 4px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.chatListGroup li:hover {
-  background-color: #e0e0e0;
-}
-
-.chatListGroup li.active {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Chat UI */
 #chatUI {
-  flex: 1;
+  width: 100%;
+  max-width: 800px; /* make it more compact */
+  margin: 8% auto;
+  background: white;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  background: #fff;
+  overflow: hidden;
+  height: 80%;
 }
 
 #chatHeader {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 600;
+  background-color: #2563eb;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
-#messagesContainer {
-  flex: 1;
+#chatMessages {
+  flex-grow: 1;
+  padding: 1rem;
   overflow-y: auto;
-  padding: 10px;
-  background: #f2f2f2;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background-color: #f9fafb;
 }
 
-.message {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
+.department-card {
+  transition: box-shadow 0.3s ease;
+  border-left: 5px solid #0d6efd;
+  border-radius: 0.5rem;
+}
+
+.department-card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Message styling */
+.chat-message {
+  margin-bottom: 1rem;
   max-width: 70%;
+  padding: 0.6rem 1rem;
+  border-radius: 18px;
+  background-color: #e0e7ff;
+  font-size: 0.9rem;
   line-height: 1.4;
 }
+
+.chat-message.admin {
+  background-color: #2563eb;
+  color: white;
+  margin-left: auto;
+}
+
+/* Chat Form Layout */
+#chatForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+}
+
+/* Icons to the left of input */
+#chatForm .icon-left {
+  font-size: 1.2rem;
+  color: #64748b;
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
+
+/* Input with mic icon inside */
+#chatInputWrapper {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+#chatInput {
+  width: 100%;
+  border: none;
+  padding: 0.6rem 2.5rem 0.6rem 1rem;
+  border-radius: 25px;
+  background-color: #f1f5f9;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+#chatInput:focus {
+  background-color: #e2e8f0;
+}
+
+/* Mic icon inside input */
+#chatInputWrapper i.fa-microphone {
+  position: absolute;
+  right: 12px;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* Send button */
+#chatForm button {
+  background-color: #2563eb;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  transition: background-color 0.2s;
+}
+
+#chatForm button:hover {
+  background-color: #1e40af;
+}
+
 
 .admin {
   background-color: #cce5ff;
@@ -414,103 +371,457 @@
   cursor: pointer;
 }
 
+  .gradient-header {
+    background: linear-gradient(135deg, #1f2937, #111827); /* Dark slate gradient */
+    color: #e0e7ff; /* Light bluish text for contrast */
+    border-radius: 6px;
+  }
+  .gradient-header strong {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .toggle-title i {
+    transition: transform 0.3s ease;
+    color: #a5b4fc; /* Soft indigo */
+  }
+  .toggle-title[aria-expanded="false"] i {
+    transform: rotate(-90deg);
+  }
+  .btn-outline-success {
+    color: #a5b4fc;
+    border-color: #a5b4fc;
+  }
+  .btn-outline-success:hover, 
+  .btn-outline-success:focus {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: white;
+  }
+ /* Online green dot */
+  .online-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #22c55e;
+    border: 2px solid #212529; /* match bg-dark border */
+    border-radius: 50%;
+  }
+
+  /* Department arrow right */
+  #departmentLists li::after {
+    content: "\f054"; /* FontAwesome right caret */
+    font-family: "Font Awesome 6 Free"; 
+    font-weight: 900;
+    color: #6c757d; /* bootstrap text-secondary */
+    font-size: 0.9rem;
+  }
+
+  /* Arrow rotation */
+  .collapsible-header i {
+    transition: transform 0.3s ease;
+  }
+  .collapsed i {
+    transform: rotate(-90deg);
+  }
+
+  .custom-bg{
+color: black;
+background-color:white;
+  }
+
+  .custom-boder{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+cursor: pointer;
+border-radius: 8px;
+  }
   </style>
 </head>
 <body>
 
   <!-- Top Navbar -->
-  <nav id="topNav">
-    <div class="welcome-text">Welcome, <span id="adminName">Admin</span></div>
-    <div id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" role="button" tabindex="0">
-      <!-- Notification badge -->
-      <span class="notif-badge" id="profileNotif" style="display:none">3</span>
-      <img src="https://i.pravatar.cc/150?img=12" alt="Admin Avatar" />
-      <span class="caret"></span>
+ <nav id="topNav" class=" border-bottom bg-white w-60 d-flex justify-content-center">
+  <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 80%; padding: 0.75rem 1rem;">
+    <div class="welcome-text fw-semibold fs-6 text-dark">Welcome, <span id="adminName">Admin</span></div>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Notification Bell -->
+      <div id="notificationBell" class="position-relative">
+        <i class="fa-solid fa-bell fs-5 text-dark"></i>
+        <span class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">3</span>
+      </div>
+
+      <!-- Profile Dropdown -->
+      <div class="dropdown">
+        <div id="profileDropdown" class="d-flex align-items-center gap-2 text-dark" data-bs-toggle="dropdown" style="cursor: pointer;">
+          <img src="https://i.pravatar.cc/36" alt="Profile Picture" class="rounded-circle border" width="36" height="36">
+          <i class="fa-solid fa-caret-down text-dark"></i> <!-- black dropdown arrow -->
+        </div>
+
+        <!-- Dropdown Menu -->
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-user text-primary"></i> Profile
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-right-from-bracket text-danger"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Sidebar -->
   <aside id="sidebar">
-  <p>cardstel</p>
-    <div class="section">
-      <h5>Departments</h5>
-      <ul id="departmentList" class="list-group list-group-flush">
-        <!-- Sample departments -->
-     
-      </ul>
-      <button id="addDepartmentBtn" class="btn btn-primary btn-sm mt-2">+ Add Department</button>
-    </div>
+    <p class="fw-bold mb-3"><i class="fa-solid fa-house"></i> cardstel</p>
 
-    <div class="section">
-      <h5>General Chat</h5>
-      <ul id="generalChatList" class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          Admin
-          <span class="badge bg-success rounded-pill">5</span>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          Staff
-          <span class="badge bg-danger rounded-pill">2</span>
-        </li>
-      </ul>
-    </div>
-    <div class="section">
-  <h5>Manage Staff</h5>
-  <button class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#addStaffModal">+ Add Staff</button>
-</div>
+    <!-- Sidebar Navigation -->
+    <ul class="list-group mb-4">
+      <li class="list-group-item" onclick="showChatGroup('chatsGroup')">
+        <i class="fa-solid fa-comments me-2"></i> Chats
+      </li>
+      <li class="list-group-item" onclick="showChatGroup('departmentsGroup')">
+        <i class="fa-solid fa-building me-2"></i> Depart
+      </li>
+      <li class="list-group-item" onclick="showChatGroup('staffGroup')">
+        <i class="fa-solid fa-user-group me-2"></i> Staff
+      </li>
+      <li class="list-group-item" onclick="showChatGroup('settingsGroup')">
+        <i class="fa-solid fa-gear me-2"></i> Settings
+      </li>
+    </ul>
   </aside>
 
-<!-- Main Content -->
-<main id="mainContent">
-  <!-- Left chat list -->
-  <div id="chatListContainer">
-  <h3>Chats</h3>
+  <!-- Main Content -->
+  <main id="mainContent">
+    
+    <!-- Dynamic Chat List Container -->
+    <div id="chatListContainer">
+
+      <!-- Chats Group -->
+      
+<div class="chat-group active" id="chatsGroup">
+  <h3 class="sticky-top bg-dark text-light py-2 px-3 border-bottom">Chats</h3>
 
   <!-- Departments -->
-  <div class="chat-group">
-    <label>Departments</label>
-    <input type="text" class="searchInput" data-target="departmentList" placeholder="Search departments..." />
-    <ul id="departmentLists" class="chatListGroup">
-      <li>HR</li>
-      <li>Finance</li>
-      <li>Engineering</li>
-      <li>Design</li>
-    </ul>
+  <div class="chat-groups bg-secondary bg-opacity-10 rounded mb-4 p-3">
+    <a 
+      class="collapsible-header d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded" 
+      data-bs-toggle="collapse" 
+      href="#collapseDepartments" 
+      role="button" 
+      aria-expanded="true" 
+      aria-controls="collapseDepartments"
+    >
+      Departments
+      <i class="fa fa-chevron-down"></i>
+    </a>
+
+    <div class="collapse show mt-3" id="collapseDepartments">
+      <input type="text" class="searchInput form-control mb-2" data-target="departmentList" placeholder="Search departments..." />
+      <ul id="departmentLis" class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center   text-dark px-2 py-2 mt-2 custom-boder">
+          HR
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt- custom-boder">
+          Finance
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt-2 custom-boder">
+          Engineering
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt-2 custom-boder">
+          Design
+        </li>
+      </ul>
+    </div>
   </div>
 
-  <!-- Staff -->
-  <div class="chat-group">
-    <label>Staff</label>
-    <input type="text" class="searchInput" data-target="staffList" placeholder="Search staff..." />
-    <ul id="staffList" class="chatListGroup">
-      <li>John Doe</li>
-      <li>Jane Smith</li>
-      <li>Chris James</li>
-    </ul>
+<!-- Staff -->
+<div class="chat-groups bg-secondary bg-opacity-10 rounded mb-4 p-3">
+  <a
+    class="collapsible-header d-flex justify-content-between align-items-center bg-dark text-light  px-3 py-2 rounded"
+    data-bs-toggle="collapse"
+    href="#collapseStaff"
+    role="button"
+    aria-expanded="true"
+    aria-controls="collapseStaff"
+  >
+    Staff
+    <i class="fa fa-chevron-down"></i>
+  </a>
+  <div class="collapse show mt-3" id="collapseStaff">
+    <input type="text" class="searchInput form-control mb-2" data-target="staffList" placeholder="Search staff..." />
+    <ul id="staffList" class="list-group list-group-flush"></ul>
   </div>
+</div>
 
-  <!-- Admin -->
-  <div class="chat-group">
-    <label>Admins</label>
-    <input type="text" class="searchInput" data-target="adminList" placeholder="Search admins..." />
-    <ul id="adminList" class="chatListGroup">
-      <li>Admin Alpha</li>
-      <li>Admin Beta</li>
-    </ul>
+<!-- Admin -->
+<div class="chat-groups bg-secondary bg-opacity-10 rounded mb-4 p-3">
+  <a
+    class="collapsible-header d-flex justify-content-between align-items-center bg-dark text-light  px-3 py-2 rounded"
+    data-bs-toggle="collapse"
+    href="#collapseAdmin"
+    role="button"
+    aria-expanded="true"
+    aria-controls="collapseAdmin"
+  >
+    Admins
+    <i class="fa fa-chevron-down"></i>
+  </a>
+  <div class="collapse show mt-3" id="collapseAdmin">
+    <input type="text" class="searchInput form-control mb-2" data-target="adminList" placeholder="Search admins..." />
+    <ul id="adminList" class="list-group list-group-flush"></ul>
   </div>
 </div>
 
 
-  <!-- Right chat UI -->
-  <div id="chatUI">
-    <header id="chatHeader">Select a chat</header>
-    <div id="messagesContainer"></div>
-    <form id="chatForm">
-      <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required />
-      <button type="submit" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-    </form>
+</div>
+
+
+
+      <!-- Departments Group -->
+    <!-- Departments Group -->
+<div class="chat-group bg-secondary bg-opacity-10 rounded mb-4 p-3" id="departmentsGroup">
+  <div class="d-flex justify-content-between align-items-center bg-dark text-light px-3 py-2 rounded collapsible-header" data-bs-toggle="collapse" href="#collapseDepartments" role="button" aria-expanded="true" aria-controls="collapseDepartments">
+    <span>Departments</span>
+    <div class="d-flex align-items-center gap-2">
+      <button id="addDepartmentBtn" class="btn btn-sm btn-outline-light">+ Add</button>
+      <i class="fa fa-chevron-down"></i>
+    </div>
   </div>
-</main>
+
+  <div class="collapse show mt-3" id="collapseDepartments">
+    <input type="text" class="searchInput form-control mb-2" data-target="departmentList" placeholder="Search departments..." />
+     <ul id="departmentList" class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center   text-dark px-2 py-2 mt-2 custom-boder">
+          HR
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt- custom-boder">
+          Finance
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt-2 custom-boder">
+          Engineering
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center  text-dark px-2 py-2 mt-2 custom-boder">
+          Design
+        </li>
+      </ul>
+  
+  </div>
+</div>
+
+
+      <!-- Staff Group -->
+<div class="chat-group" id="staffGroup">
+  <div class="d-flex align-items-center justify-content-between gradient-header px-3 py-2">
+    <div class="toggle-title" data-bs-toggle="collapse" data-bs-target="#collapseStaff" aria-expanded="true" aria-controls="collapseStaff">
+      <strong>Staff</strong>
+      <i class="fa fa-chevron-down ms-2"></i>
+    </div>
+    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addStaffModal">+ Add</button>
+  </div>
+
+  <div class="collapse show" id="collapseStaff">
+    <div class="px-3 pb-3 pt-2 custom-scroll">
+      <input type="text" class="searchInput form-control mb-3" data-target="staffList" placeholder="Search staff..." />
+      <ul id="staffShow" class="list-unstyled">
+
+ 
+      </ul>
+    </div>
+  </div>
+
+<div class="d-flex align-items-center justify-content-between gradient-header px-3 py-2">
+  <div 
+    class="toggle-title d-flex align-items-center" 
+    role="button" 
+    data-bs-toggle="collapse" 
+    data-bs-target="#collapseAdmins" 
+    aria-expanded="true" 
+    aria-controls="collapseAdmins"
+    style="cursor: pointer;"
+  >
+    <strong>Admins</strong>
+    <i class="fa fa-chevron-down ms-2"></i>
+  </div>
+  <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">+ Add</button>
+</div>
+
+  <div class="collapse show" id="collapseAdmins">
+  <div class="px-3 pb-3 pt-2 custom-scroll">
+    <input type="text" class="searchInput form-control mb-3" placeholder="Search admins..." />
+    <ul id="adminShow" class="list-unstyled">
+      
+     
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1" aria-labelledby="suspendModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="suspendModalLabel">Suspend Staff</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to suspend this staff member?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning btn-sm">Suspend</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Admin Modal -->
+<div class="modal fade" id="assignAdminModal" tabindex="-1" aria-labelledby="assignAdminModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="assignAdminModalLabel">Assign as Admin</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Do you want to assign this staff member as an admin?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-info btn-sm">Assign</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Staff</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        This action is permanent. Are you sure?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Suspend Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">Suspend Admin</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to suspend this admin?
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-warning btn-sm">Suspend</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Admin Modal -->
+<div class="modal fade" id="removeAdminModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">Remove Admin</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Confirm removing this admin from the system?
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger btn-sm">Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal (Shared) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete User</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this user?
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger btn-sm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+      <!-- Settings Group -->
+      <div class="chat-group" id="settingsGroup">
+        <label>Settings</label>
+        <p class="text-muted">Settings options will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Right Chat UI -->
+
+
+
+    <div id="chatUI">
+      <div id="chatHeader">Chat with</div>
+      <div id="chatMessages"></div>
+      <!-- <form id="chatForm">
+        <input type="text" id="chatInput" placeholder="Type a message..." />
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form> -->
+
+      <form id="chatForm">
+  <!-- Left icons -->
+  <i class="fa fa-paperclip icon-left"></i>
+  <i class="fa fa-smile icon-left"></i>
+
+  <!-- Input wrapper with mic inside -->
+  <div id="chatInputWrapper">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <i class="fa fa-microphone"></i>
+  </div>
+
+  <!-- Send button -->
+  <button type="submit"><i class="fa fa-paper-plane"></i></button>
+</form>
+
+    </div>
+
+  </main>
 
 
 
@@ -637,93 +948,27 @@
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 
-<script>
-  // 🔐 Initialize Firebase (replace with your actual config)
-     const firebaseConfig = {
-      apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
-      authDomain: "chat-app-6776e.firebaseapp.com",
-      projectId: "chat-app-6776e",
-      storageBucket: "chat-app-6776e.firebasestorage.app",
-      messagingSenderId: "136411415099",
-      appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
-      measurementId: "G-GVS3VG6Y50"
-    };
-    
-  firebase.initializeApp(firebaseConfig);
-</script>
 
 <script>
-  // Wait until Firebase auth is ready
-  firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) {
-      alert("You must be logged in.");
-      return;
-    }
+  // ✅ Toast Helpers
+  function showSuccess(message = "Success!") {
+    document.getElementById('successToastBody').textContent = message;
+    new bootstrap.Toast(document.getElementById('successToast')).show();
+  }
 
-    const token = await user.getIdToken();
+  function showError(message = "Something went wrong.") {
+    document.getElementById('errorToastBody').textContent = message;
+    new bootstrap.Toast(document.getElementById('errorToast')).show();
+  }
 
-    // 🌐 Connect to Socket.IO with Firebase token
-    const socket = io({
-      auth: {
-        token: token
-      }
-    });
-
-    // ✅ Receive message from server
-    socket.on('chat message', (data) => {
-      console.log("New message received:", data);
-      renderMessage(data); // update the UI
-    });
-
-    // ✉️ Send message on form submit
-    document.getElementById('chatForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const input = document.getElementById('messageInput');
-      const msg = input.value.trim();
-
-      if (!msg) return;
-
-      socket.emit('chat message', {
-        content: msg,
-        type: 'department' // 'private', 'broadcast' as needed
-      });
-
-      input.value = '';
-    });
-
-    // 🧾 Render message in UI
-    function renderMessage({ content, senderId, isSelf }) {
-      const container = document.getElementById('messagesContainer');
-      const div = document.createElement('div');
-      div.className = 'message ' + (isSelf ? 'admin' : 'staff');
-      div.textContent = content;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
-  });
-</script>
-
- 
- 
- <script>
-function showSuccess(message = "Success!") {
-  document.getElementById('successToastBody').textContent = message;
-  new bootstrap.Toast(document.getElementById('successToast')).show();
-}
-
-function showError(message = "Something went wrong.") {
-  document.getElementById('errorToastBody').textContent = message;
-  new bootstrap.Toast(document.getElementById('errorToast')).show();
-}
-
-
-async function populateDepartmentDropdown() {
+  // 📂 Populate Department Dropdown
+  async function populateDepartmentDropdown() {
     try {
       const res = await fetch('/api/departments');
       const departments = await res.json();
 
       const select = document.getElementById('staffDepartment');
-      select.innerHTML = '<option value="">-- None --</option>'; // Reset
+      select.innerHTML = '<option value="">-- None --</option>';
 
       departments.forEach(dept => {
         const option = document.createElement('option');
@@ -736,53 +981,338 @@ async function populateDepartmentDropdown() {
     }
   }
 
-  // Optional: When modal is shown, load departments
+  // 🧩 Load departments when modal is shown
   const addStaffModal = document.getElementById('addStaffModal');
   addStaffModal.addEventListener('show.bs.modal', populateDepartmentDropdown);
 
- document.getElementById('addStaffForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+  // 👤 Handle Add Staff Form Submission
+  document.getElementById('addStaffForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-  const email = document.getElementById('staffEmail').value.trim();
-  const role = document.getElementById('staffRole').value;
-  const department_id = document.getElementById('staffDepartment').value || null;
+    const email = document.getElementById('staffEmail').value.trim();
+    const role = document.getElementById('staffRole').value;
+    const department_id = document.getElementById('staffDepartment').value || null;
 
-  try {
-    const response = await fetch('/api/staff/invite', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, role, department_id })
+    try {
+      const response = await fetch('/api/staff/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, role, department_id })
+      });
+
+      const resultText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(resultText);
+      } catch (jsonError) {
+        throw new Error('Server returned non-JSON: ' + resultText.slice(0, 100));
+      }
+
+      if (response.ok) {
+        showSuccess("Invitation email sent successfully!");
+        document.getElementById('addStaffForm').reset();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addStaffModal'));
+        modal.hide();
+      } else {
+        const errorMessage = result.error || result.message || 'Something went wrong';
+        alert('Error: ' + errorMessage);
+      }
+
+    } catch (err) {
+      alert('Network or unexpected error: ' + err.message);
+      console.error(err);
+    }
+  });
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+    authDomain: "chat-app-6776e.firebaseapp.com",
+    projectId: "chat-app-6776e",
+    storageBucket: "chat-app-6776e.firebasestorage.app",
+    messagingSenderId: "136411415099",
+    appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+    measurementId: "G-GVS3VG6Y50"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  let socket;
+  let currentUserId = null;
+
+  // Track current chat type and id
+  let currentChatType = null; // 'private' or 'department'
+  let currentChatId = null;   // user id or department id
+
+  // DOM references
+  const departmentLis = document.getElementById('departmentLis');
+  const staffList = document.getElementById('staffList');
+  const adminList = document.getElementById('adminList');
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    currentUserId = user.uid;
+    const token = await user.getIdToken();
+
+    socket = io('http://localhost:5000', { auth: { token } });
+    socket.on('connect', () => console.log('✅ Connected to chat server'));
+
+    // Listen for incoming chat messages (both private and department)
+    socket.on('chat message', (data) => {
+      let isRelevant = false;
+
+      if (currentChatType === 'private') {
+        isRelevant =
+          (data.sender_id === currentChatId && data.receiver_id === currentUserId) ||
+          (data.sender_id === currentUserId && data.receiver_id === currentChatId);
+      } else if (currentChatType === 'department') {
+        isRelevant = data.type === 'department' && data.department_id === currentChatId;
+      }
+
+      if (!isRelevant) return;
+
+      appendMessage(data);
     });
 
-    let resultText = await response.text(); // <-- get text first
+    // Load users and departments on page load
+    await loadAndRenderUsers();
+    await loadAndRenderDepartments();
 
-    // Try to parse JSON
-    let result;
+    // Handle sending message form submission
+    document.getElementById('chatForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg || !currentChatId || !currentChatType) return;
+
+      let messageData;
+
+      if (currentChatType === 'private') {
+        messageData = {
+          content: msg,
+          type: 'private',
+          sender_id: currentUserId,
+          receiver_id: currentChatId,
+          department_id: null
+        };
+      } else if (currentChatType === 'department') {
+        messageData = {
+          content: msg,
+          type: 'department',
+          sender_id: currentUserId,
+          receiver_id: null,
+          department_id: currentChatId
+        };
+      } else {
+        return;
+      }
+
+      socket.emit('chat message', messageData);
+      appendMessage({ ...messageData, isSelf: true });
+      input.value = '';
+    });
+  });
+
+  // Load and render department list
+  async function loadAndRenderDepartments() {
     try {
-      result = JSON.parse(resultText);
-    } catch (jsonError) {
-      throw new Error('Server returned non-JSON: ' + resultText.slice(0, 100));
-    }
+      const res = await fetch('http://localhost:5000/api/departments');
+      const departments = await res.json();
 
-    if (response.ok) {
-      showSuccess("Invitation email sent successfully!");
-      document.getElementById('addStaffForm').reset();
-      const modal = bootstrap.Modal.getInstance(document.getElementById('addStaffModal'));
-      modal.hide();
-    } else {
-      const errorMessage = result.error || result.message || 'Something went wrong';
-      alert('Error: ' + errorMessage);
-    }
+      departmentLis.innerHTML = '';
 
-  } catch (err) {
-    alert('Network or unexpected error: ' + err.message);
-    console.error(err);
+      departments.forEach(dept => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center text-dark px-2 py-2 mt-2 custom-boder custom-bg';
+        li.style.cursor = 'pointer';
+        li.textContent = dept.name;
+        li.dataset.deptId = dept.id;
+
+        li.addEventListener('click', () => {
+          // Remove active class from all users and departments
+          document.querySelectorAll('#staffList li, #adminList li, #departmentLis li').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          currentChatType = 'department';
+          currentChatId = dept.id;
+
+          document.getElementById('chatHeader').textContent = `Chat with Department: ${dept.name}`;
+          document.getElementById('chatMessages').innerHTML = '';
+
+          loadChatMessages(currentChatType, currentChatId);
+        });
+
+        departmentLis.appendChild(li);
+      });
+    } catch (err) {
+      console.error('Failed to load departments:', err);
+    }
   }
-});
 
+  // Load and render users (admins and staff)
+  async function loadAndRenderUsers() {
+    try {
+      const res = await fetch('/api/staff/all');
+      const users = await res.json();
+
+      staffList.innerHTML = '';
+      adminList.innerHTML = '';
+
+      const admins = users.filter(u => u.role === 'admin');
+      const staff = users.filter(u => u.role !== 'admin');
+
+      function createUserItem(user) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex align-items-center justify-content-between gap-3 custom-boder custom-bg px-2 py-2 mt-2';
+        li.style.cursor = 'pointer';
+
+        const img = `https://i.pravatar.cc/36?u=${user.firebase_uid}`;
+        const name = user.name || 'Unknown';
+        const isOnline = user.status?.toLowerCase() === 'active';
+
+        li.innerHTML = `
+          <div class="relative-position d-flex align-items-center gap-2">
+            <img src="${img}" alt="${name}" class="rounded-circle" />
+            <span class="fw-medium">${name}</span>
+          </div>
+          <span class="${isOnline ? 'text-success' : 'text-dark'} fw-medium">● ${isOnline ? 'Active' : 'Offline'}</span>
+        `;
+
+        li.addEventListener('click', () => {
+          document.querySelectorAll('#staffList li, #adminList li, #departmentLis li').forEach(el => el.classList.remove('active'));
+          li.classList.add('active');
+
+          currentChatType = 'private';
+          currentChatId = user.id;
+
+          document.getElementById('chatHeader').textContent = `Chat with ${name}`;
+          document.getElementById('chatMessages').innerHTML = '';
+
+          loadChatMessages(currentChatType, currentChatId);
+        });
+
+        return li;
+      }
+
+      if (admins.length === 0) {
+        adminList.innerHTML = '<li class="list-group-item text-center text-muted">No admins added</li>';
+      } else {
+        admins.forEach(admin => adminList.appendChild(createUserItem(admin)));
+      }
+
+      if (staff.length === 0) {
+        staffList.innerHTML = '<li class="list-group-item text-center text-muted">No staff added</li>';
+      } else {
+        staff.forEach(s => staffList.appendChild(createUserItem(s)));
+      }
+
+      // Auto-select first user available
+      const firstUser = admins[0] || staff[0];
+      if (firstUser) {
+        currentChatType = 'private';
+        currentChatId = firstUser.id;
+        document.getElementById('chatHeader').textContent = `Chat with ${firstUser.name}`;
+
+        // Add active class to first user item
+        const selector = firstUser.role === 'admin' ? '#adminList li' : '#staffList li';
+        document.querySelector(selector)?.classList.add('active');
+
+        loadChatMessages(currentChatType, currentChatId);
+      }
+
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    }
+  }
+
+  // Load chat messages for current chat
+  async function loadChatMessages(type, id) {
+    let url;
+    if (type === 'private') {
+      url = `/api/messages?type=private&user_id=${id}`;
+    } else if (type === 'department') {
+      url = `/api/messages?type=department&department_id=${id}`;
+    } else {
+      return;
+    }
+
+    try {
+      const res = await fetch(url);
+      const messages = await res.json();
+
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.innerHTML = '';
+
+      messages.forEach(msg => {
+        appendMessage({
+          content: msg.content,
+          sender_id: msg.sender_id,
+          isSelf: msg.sender_id === currentUserId,
+          type: msg.type,
+          department_id: msg.department_id,
+          receiver_id: msg.receiver_id,
+          sent_at: msg.sent_at
+        });
+      });
+    } catch (err) {
+      console.error('Failed to load chat messages:', err);
+    }
+  }
+
+  function appendMessage(data) {
+  const chatMessages = document.getElementById('chatMessages');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `d-flex flex-column ${data.isSelf ? 'align-items-end' : 'align-items-start'} mb-3`;
+
+  const bubble = document.createElement('div');
+  bubble.className = `p-2 rounded-3 ${data.isSelf ? 'bg-primary text-white' : 'bg-light text-dark'}`;
+  bubble.style.maxWidth = '75%';
+  bubble.style.wordBreak = 'break-word';
+  bubble.textContent = data.content;
+
+  // Timestamp
+  const timestamp = document.createElement('small');
+  timestamp.className = `mt-1 text-muted ${data.isSelf ? 'text-end' : 'text-start'}`;
+
+  // Format timestamp if available
+  const time = data.sent_at ? new Date(data.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  timestamp.textContent = time;
+
+  // Sender label for received messages
+  if (!data.isSelf && data.sender_name) {
+    const senderLabel = document.createElement('div');
+    senderLabel.className = 'fw-semibold text-primary small mb-1';
+    senderLabel.textContent = data.sender_name;
+    wrapper.appendChild(senderLabel);
+  }
+
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(timestamp);
+
+  chatMessages.appendChild(wrapper);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 </script>
+ <script>
+    function showChatGroup(groupId) {
+      document.querySelectorAll('.chat-group').forEach(group => {
+        group.classList.remove('active');
+      });
+      document.getElementById(groupId).classList.add('active');
+    }
+  </script>
+
 
   
   <script>
@@ -816,22 +1346,29 @@ async function loadDepartments() {
 
 // Render a department item into both the list and dropdown
 function renderDepartment(dept) {
-  // Create list item
+  // Card container (LI element styled like a card)
   const li = document.createElement('li');
-  li.className = "list-group-item d-flex justify-content-between align-items-center";
+  li.className = "card shadow-sm p-3 mb-3 border-0 department-card";
   li.dataset.deptId = dept.id;
 
-  const span = document.createElement('span');
-  span.textContent = dept.name;
-  li.appendChild(span);
+  // Card body row layout
+  const row = document.createElement('div');
+  row.className = 'd-flex justify-content-between align-items-center';
 
+  // Left: Department name
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'd-flex align-items-center gap-2';
+  nameDiv.innerHTML = `<i class="fas fa-building text-dark fs-5"></i><span class="fw-semibold fs-6">${dept.name}</span>`;
+
+  // Right: Action icons
   const btnGroup = document.createElement('div');
+  btnGroup.className = 'd-flex gap-2';
 
   // Edit button
   const btnEdit = document.createElement('button');
-  btnEdit.className = "btn-icon";
+  btnEdit.className = "btn btn-sm btn-outline-warning rounded-circle";
   btnEdit.title = "Edit";
-  btnEdit.innerHTML = '<i class="fas fa-pen text-warning"></i>';
+  btnEdit.innerHTML = '<i class="fas fa-pen"></i>';
   btnEdit.addEventListener('click', () => {
     document.getElementById('editDeptName').value = dept.name;
     document.getElementById('editDeptId').value = dept.id;
@@ -840,9 +1377,9 @@ function renderDepartment(dept) {
 
   // Assign button
   const btnAssign = document.createElement('button');
-  btnAssign.className = "btn-icon";
+  btnAssign.className = "btn btn-sm btn-outline-primary rounded-circle";
   btnAssign.title = "Assign Staff";
-  btnAssign.innerHTML = '<i class="fas fa-user-plus text-primary"></i>';
+  btnAssign.innerHTML = '<i class="fas fa-user-plus"></i>';
   btnAssign.addEventListener('click', () => {
     document.getElementById('assignDeptId').value = dept.id;
     document.getElementById('assignEmail').value = '';
@@ -851,9 +1388,9 @@ function renderDepartment(dept) {
 
   // Delete button
   const btnRemove = document.createElement('button');
-  btnRemove.className = "btn-icon";
+  btnRemove.className = "btn btn-sm btn-outline-danger rounded-circle";
   btnRemove.title = "Delete";
-  btnRemove.innerHTML = '<i class="fas fa-trash text-danger"></i>';
+  btnRemove.innerHTML = '<i class="fas fa-trash"></i>';
   btnRemove.addEventListener('click', async () => {
     if (confirm(`Delete "${dept.name}"?`)) {
       try {
@@ -867,8 +1404,17 @@ function renderDepartment(dept) {
     }
   });
 
+  // Append buttons to group
   btnGroup.append(btnEdit, btnAssign, btnRemove);
-  li.appendChild(btnGroup);
+
+  // Assemble the row
+  row.appendChild(nameDiv);
+  row.appendChild(btnGroup);
+
+  // Add row to card (li)
+  li.appendChild(row);
+
+  // Append the card to the list
   departmentList.appendChild(li);
 
   // Add to dropdown
@@ -877,6 +1423,7 @@ function renderDepartment(dept) {
   option.textContent = dept.name;
   staffDepartmentSelect.appendChild(option);
 }
+
 
 // Add new department
 document.getElementById('addDepartmentForm').addEventListener('submit', async function (e) {
@@ -972,11 +1519,91 @@ document.getElementById('addDepartmentBtn').addEventListener('click', () => {
 
 // Init
 window.addEventListener('DOMContentLoaded', loadDepartments);
+// Render a user card (staff or admin)
+function renderUser(user, container) {
+  let profileImg = `https://i.pravatar.cc/40?u=${user.firebase_uid}`;
 
+  if (user.profile_picture?.data) {
+    try {
+      const bufferData = user.profile_picture.data;
+      const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
+      profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+    } catch (err) {
+      console.warn("Failed to decode profile picture path:", err);
+    }
+  }
 
+  const li = document.createElement("li");
+  li.className = "staff-item d-flex justify-content-between align-items-center py-2 border-bottom";
+  li.innerHTML = `
+    <div class="d-flex align-items-center">
+      <img src="${profileImg}" class="rounded-circle me-2" alt="Profile" width="40" height="40" />
+      <span class="staff-name">${user.name}</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-light" title="Edit"><i class="fa fa-pen"></i></button>
+      <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa fa-trash"></i></button>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fa fa-ellipsis-vertical"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#suspendModal">Suspend</a></li>
+          ${
+            user.role === "staff"
+              ? `<li><a class="dropdown-item text-info" data-bs-toggle="modal" data-bs-target="#assignAdminModal">Assign as Admin</a></li>`
+              : `<li><a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#removeAdminModal">Remove Admin</a></li>`
+          }
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</a></li>
+        </ul>
+      </div>
+    </div>
+  `;
+  container.appendChild(li);
+}
 
+// Load users and categorize into staff/admin
+async function loadUsers() {
+  try {
+    const res = await fetch('http://localhost:5000/api/staff/all');
+    const users = await res.json();
 
+    const staffList = document.getElementById('staffShow');
+    const adminList = document.getElementById('adminShow');
 
+    if (!staffList || !adminList) {
+      console.error("Missing #staffShow or #adminShow in HTML.");
+      return;
+    }
+
+    // Clear existing
+    staffList.innerHTML = '';
+    adminList.innerHTML = '';
+
+    // Separate staff and admin users
+    const staffUsers = users.filter(u => u.role === 'staff');
+    const adminUsers = users.filter(u => u.role === 'admin');
+
+    // Render users or fallback message
+    if (staffUsers.length > 0) {
+      staffUsers.forEach(user => renderUser(user, staffList));
+    } else {
+      staffList.innerHTML = `<li class="text-muted text-center py-2">No added staff.</li>`;
+    }
+
+    if (adminUsers.length > 0) {
+      adminUsers.forEach(user => renderUser(user, adminList));
+    } else {
+      adminList.innerHTML = `<li class="text-muted text-center py-2">No added admin.</li>`;
+    }
+
+  } catch (err) {
+    console.error("Failed to load users:", err);
+  }
+}
+
+loadUsers();
   </script>
 </body>
 </html>

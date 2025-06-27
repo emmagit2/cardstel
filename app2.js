@@ -8,6 +8,8 @@ const { Server } = require('socket.io');
 const authRoutes = require('./routes/authRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const messageRoutes = require('./routes/messageRoute');
+
 
 const initChatSocket = require('./sockets/chatSocket');
 
@@ -26,6 +28,8 @@ app.use(express.static('public'));
 app.use('/api/auth', authRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/messages', messageRoutes);
+
 
 // Views
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views/auth.html')));
