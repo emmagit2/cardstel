@@ -1064,7 +1064,7 @@ border-radius: 8px;
     currentUserId = user.uid;
     const token = await user.getIdToken();
 
-    socket = io('http://localhost:5000', { auth: { token } });
+    socket = io('https://cardstel.onrender.com', { auth: { token } });
     socket.on('connect', () => console.log('✅ Connected to chat server'));
 
     // Listen for incoming chat messages (both private and department)
@@ -1126,7 +1126,7 @@ border-radius: 8px;
   // Load and render department list
   async function loadAndRenderDepartments() {
     try {
-      const res = await fetch('http://localhost:5000/api/departments');
+      const res = await fetch('https://cardstel.onrender.com/api/departments');
       const departments = await res.json();
 
       departmentLis.innerHTML = '';
@@ -1566,7 +1566,7 @@ function renderUser(user, container) {
 // Load users and categorize into staff/admin
 async function loadUsers() {
   try {
-    const res = await fetch('http://localhost:5000/api/staff/all');
+    const res = await fetch('https://cardstel.onrender.com/api/staff/all');
     const users = await res.json();
 
     const staffList = document.getElementById('staffShow');
