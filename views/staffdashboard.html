@@ -494,7 +494,7 @@
 
     // ✅ Fetch and Render Staff List
     try {
-      const staffList = await fetch('/api/staff/all')
+      const staffList = await fetch('https://cardstel.onrender.com/api/staff/all')
         .then(res => res.json());
 
       const rolePriority = {
