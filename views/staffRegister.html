@@ -10,7 +10,7 @@
     <input type="text" id="fullName" placeholder="Full Name" required /><br/>
     <input type="text" id="username" placeholder="Username" required /><br/>
     <input type="email" id="email" placeholder="Email" readonly /><br/>
-    <input type="password" id="password" placeholder="Password" required /><br/>
+    <input type="password" id="password" placeholder="Password (min 6 characters)" required /><br/>
     <input type="file" id="photo" accept="image/*" /><br/>
     <button type="submit">Register</button>
   </form>
@@ -48,10 +48,11 @@
         if (res.ok) {
           document.getElementById('email').value = data.email;
         } else {
-          alert(data.message || 'Invalid token');
+          alert(data.message || 'Invalid or expired invite token.');
         }
       } catch (err) {
         console.error('Error fetching invite info:', err);
+        alert('Failed to fetch invitation details.');
       }
     }
 
@@ -68,12 +69,21 @@
       const password = document.getElementById('password').value.trim();
       const photo = document.getElementById('photo').files[0];
 
-      try {
-        // Register with Firebase
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        const firebase_uid = userCred.user.uid;
+      // Basic password validation
+      if (password.length < 6) {
+        alert('❌ Password must be at least 6 characters.');
+        return;
+      }
 
-        let photo_url = null;
+      let firebaseUser = null;
+      let photo_url = null;
+
+      try {
+        // Step 1: Create Firebase user
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        firebaseUser = userCred.user;
+
+        // Step 2: Upload photo if present
         if (photo) {
           const formData = new FormData();
           formData.append('photo', photo);
@@ -82,10 +92,11 @@
             body: formData
           });
           const uploadData = await uploadRes.json();
+          if (!uploadRes.ok) throw new Error(uploadData.message || 'Photo upload failed');
           photo_url = uploadData.photo_url;
         }
 
-        // Send registration to backend
+        // Step 3: Register with backend
         const res = await fetch('/api/staff/complete-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -93,7 +104,7 @@
             full_name,
             username,
             email,
-            firebase_uid,
+            firebase_uid: firebaseUser.uid,
             photo_url,
             token
           })
@@ -103,12 +114,24 @@
         if (res.ok) {
           alert('✅ Registration complete! Redirecting to login...');
           form.reset();
-          window.location.href = '/login'; // 👈 Change this if your login route is different
+          window.location.href = '/login';
         } else {
-          alert('❌ ' + data.message);
+          throw new Error(data.message || 'Backend registration failed');
         }
       } catch (err) {
-        alert("❌ Firebase Error: " + err.message);
+        console.error('Error:', err.message);
+
+        // Rollback Firebase user if already created
+        if (firebaseUser) {
+          try {
+            await firebaseUser.delete();
+            console.log('⛔ Firebase user deleted due to registration failure.');
+          } catch (delErr) {
+            console.error('⚠ Failed to delete Firebase user:', delErr);
+          }
+        }
+
+        alert('❌ ' + err.message);
       }
     });
   </script>
