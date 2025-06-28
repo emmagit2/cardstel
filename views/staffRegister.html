@@ -3,6 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Staff Registration</title>
+  <style>
+    #loadingSpinner {
+      display: none;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #007bff;
+    }
+    #loadingSpinner::before {
+      content: "⏳ ";
+    }
+    button[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <h2>Complete Registration</h2>
@@ -12,7 +27,8 @@
     <input type="email" id="email" placeholder="Email" readonly /><br/>
     <input type="password" id="password" placeholder="Password (min 6 characters)" required /><br/>
     <input type="file" id="photo" accept="image/*" /><br/>
-    <button type="submit">Register</button>
+    <button type="submit" id="registerBtn">Register</button>
+    <div id="loadingSpinner">Processing... Please wait</div>
   </form>
 
   <script type="module">
@@ -32,9 +48,12 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Get token from URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
+
+    const form = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
 
     async function prefillEmail() {
       if (!token) {
@@ -58,8 +77,6 @@
 
     prefillEmail();
 
-    // Handle form submission
-    const form = document.getElementById('registerForm');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -69,7 +86,6 @@
       const password = document.getElementById('password').value.trim();
       const photo = document.getElementById('photo').files[0];
 
-      // Basic password validation
       if (password.length < 6) {
         alert('❌ Password must be at least 6 characters.');
         return;
@@ -79,11 +95,15 @@
       let photo_url = null;
 
       try {
+        // Show loading spinner & disable button
+        loadingSpinner.style.display = 'block';
+        registerBtn.disabled = true;
+
         // Step 1: Create Firebase user
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         firebaseUser = userCred.user;
 
-        // Step 2: Upload photo if present
+        // Step 2: Upload photo if provided
         if (photo) {
           const formData = new FormData();
           formData.append('photo', photo);
@@ -96,7 +116,7 @@
           photo_url = uploadData.photo_url;
         }
 
-        // Step 3: Register with backend
+        // Step 3: Send data to backend
         const res = await fetch('/api/staff/complete-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -120,8 +140,6 @@
         }
       } catch (err) {
         console.error('Error:', err.message);
-
-        // Rollback Firebase user if already created
         if (firebaseUser) {
           try {
             await firebaseUser.delete();
@@ -130,8 +148,11 @@
             console.error('⚠ Failed to delete Firebase user:', delErr);
           }
         }
-
         alert('❌ ' + err.message);
+      } finally {
+        // Always hide spinner and enable button again
+        loadingSpinner.style.display = 'none';
+        registerBtn.disabled = false;
       }
     });
   </script>
