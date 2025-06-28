@@ -150,7 +150,7 @@ exports.getStaffProfile = async (req, res) => {
 // === Get All Staff Members ===
 exports.getAllStaff = async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM users WHERE role = 'staff'");
+    const result = await pool.query("SELECT * FROM users");
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error fetching staff:', error);
