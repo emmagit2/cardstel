@@ -414,6 +414,7 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js" integrity="sha512-AI5A3zIoeRSEEX9z3Vyir8NqSMC1pY7r5h2cE+9J6FLsoEmSSGLFaqMQw8SWvoONXogkfFrkQiJfLeHLz3+HOg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -491,77 +492,71 @@
       input.value = '';
     });
 
-// ✅ Fetch and Render Staff List
-try {
-  const staffList = await fetch('/api/staff/all')
-    .then(res => res.json());
+    // ✅ Fetch and Render Staff List
+    try {
+      const staffList = await fetch('/api/staff/all')
+        .then(res => res.json());
 
-  const rolePriority = {
-    super_admin: 1,
-    admin: 2,
-    staff: 3
-  };
+      const rolePriority = {
+        super_admin: 1,
+        admin: 2,
+        staff: 3
+      };
 
-  // Sort staff by custom role priority
-  staffList.sort((a, b) => {
-    return rolePriority[a.role] - rolePriority[b.role];
-  });
+      staffList.sort((a, b) => rolePriority[a.role] - rolePriority[b.role]);
 
-  const staffListContainer = document.getElementById('staffListItems');
+      const staffListContainer = document.getElementById('staffListItems');
 
-  staffList.forEach((staff, index) => {
-    const li = document.createElement('li');
-    li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
-    li.style.cursor = 'pointer';
-    li.dataset.id = staff.id;
+      staffList.forEach((staff, index) => {
+        const li = document.createElement('li');
+        li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
+        li.style.cursor = 'pointer';
+        li.dataset.id = staff.id;
 
-    // Decode Buffer path to string (profile picture path)
-    let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
-    if (staff.profile_picture?.data) {
-      const bufferData = staff.profile_picture.data;
-      const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
-      profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+        let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
+        if (staff.profile_picture?.data) {
+          const bufferData = staff.profile_picture.data;
+          const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
+          profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+        }
+
+        let roleBadge = '';
+        if (staff.role === 'admin' || staff.role === 'super_admin') {
+          const badgeText = staff.role.replace('_', ' ');
+          roleBadge = `<span class="badge bg-danger-subtle text-danger ms-2 text-capitalize">${badgeText}</span>`;
+        }
+
+        li.innerHTML = `
+          <div class="d-flex align-items-center gap-2">
+            <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+            <div class="text-dark fw-semibold d-flex align-items-center">
+              ${staff.name} ${roleBadge}
+            </div>
+          </div>
+          <div class="text-success"><i class="fa-solid fa-circle fa-xs"></i></div>
+        `;
+
+        if (index === 0) {
+          li.classList.add('active');
+          receiverId = staff.id;
+          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+        }
+
+        li.addEventListener('click', () => {
+          document.querySelector('#staffListItems li.active')?.classList.remove('active');
+          li.classList.add('active');
+          receiverId = li.dataset.id;
+          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+          document.getElementById('chatMessages').innerHTML = '';
+        });
+
+        staffListContainer.appendChild(li);
+      });
+    } catch (err) {
+      console.error('Failed to fetch staff:', err);
     }
-
-    // Create role badge for admin and super_admin
-    let roleBadge = '';
-    if (staff.role === 'admin' || staff.role === 'super_admin') {
-      const badgeText = staff.role.replace('_', ' ');
-      roleBadge = `<span class="badge bg-danger-subtle text-danger ms-2 text-capitalize">${badgeText}</span>`;
-    }
-
-    li.innerHTML = `
-      <div class="d-flex align-items-center gap-2">
-        <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
-        <div class="text-dark fw-semibold d-flex align-items-center">
-          ${staff.name} ${roleBadge}
-        </div>
-      </div>
-      <div class="text-success"><i class="fa-solid fa-circle fa-xs"></i></div>
-    `;
-
-    if (index === 0) {
-      li.classList.add('active');
-      receiverId = staff.id;
-      document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
-    }
-
-    li.addEventListener('click', () => {
-      document.querySelector('#staffListItems li.active')?.classList.remove('active');
-      li.classList.add('active');
-      receiverId = li.dataset.id;
-      document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
-      document.getElementById('chatMessages').innerHTML = '';
-    });
-
-    staffListContainer.appendChild(li);
-  });
-} catch (err) {
-  console.error('Failed to fetch staff:', err);
-}
-
+  }); // ✅ This bracket was missing – now fixed!
 </script>
-
 
 
 
