@@ -10,7 +10,6 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const messageRoutes = require('./routes/messageRoute');
 
-
 const initChatSocket = require('./sockets/chatSocket');
 
 const app = express();
@@ -30,7 +29,6 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/messages', messageRoutes);
 
-
 // Views
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views/auth.html')));
 app.get('/admin2.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin2.html')));
@@ -38,11 +36,16 @@ app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'views/ad
 app.get('/staff-register', (req, res) => res.sendFile(path.join(__dirname, 'views/staffRegister.html')));
 app.get('/staffdashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'views/staffdashboard.html')));
 
+// Optional health check route
+app.get('/', (req, res) => {
+  res.send('🟢 Server is running.');
+});
+
 // 🔌 Initialize Socket.IO logic
 initChatSocket(io);
 
-// Start server
-const PORT = 5000;
+// Start server with dynamic port for Render
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
