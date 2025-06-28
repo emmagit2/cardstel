@@ -150,14 +150,18 @@ exports.getStaffProfile = async (req, res) => {
 // === Get All Staff Members ===
 exports.getAllStaff = async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id, firebase_uid, name, profile_picture, role FROM users WHERE role = $1',
-      ['staff']
-    );
-    res.json(result.rows);
+    const query = `
+      SELECT * FROM users
+      WHERE role IN ('staff', 'admin', 'super_admin')
+      ORDER BY created_at DESC
+    `;
+
+    const { rows } = await db.query(query);
+    res.status(200).json(rows);
   } catch (error) {
-    console.error('Error fetching staff:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
