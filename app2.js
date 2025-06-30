@@ -14,14 +14,38 @@ const initChatSocket = require('./sockets/chatSocket');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
 
-// Middlewares
-app.use(cors());
+const allowedOrigins = [
+  'https://cardstel.onrender.com',  // Your frontend domain
+  'http://localhost:5000'            // Optional: your local dev frontend
+];
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like curl or Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static('public'));
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -41,7 +65,7 @@ app.get('/', (req, res) => {
   res.send('🟢 Server is running.');
 });
 
-// 🔌 Initialize Socket.IO logic
+// Initialize Socket.IO logic
 initChatSocket(io);
 
 // Start server with dynamic port for Render
