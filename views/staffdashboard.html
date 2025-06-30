@@ -251,6 +251,50 @@
   align-items: center;
 }
 
+/* Chat message container flexbox for alignment */
+  .chat-message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  /* Sent messages: align to left */
+  .chat-message.sent {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .chat-message.sent img {
+    order: 0;
+    margin-right: 10px;
+    margin-left: 0;
+  }
+
+  /* Received messages: align to right */
+  .chat-message.received {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .chat-message.received img {
+    order: 1;
+    margin-left: 10px;
+    margin-right: 0;
+  }
+
+  /* Message content max width & wrapping */
+  .chat-message .fw-semibold,
+  .chat-message .bg-light {
+    max-width: 300px;
+    word-wrap: break-word;
+  }
+
+  /* Optional colors */
+  .chat-message.sent .bg-light {
+    background-color: #e6f7ff;
+  }
+  .chat-message.received .bg-light {
+    background-color: #d9fdd3;
+  }
+
 #chatInput {
   width: 100%;
   border: none;
@@ -423,7 +467,7 @@
     apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
     authDomain: "chat-app-6776e.firebaseapp.com",
     projectId: "chat-app-6776e",
-    storageBucket: "chat-app-6776e.firebasestorage.app",
+    storageBucket: "chat-app-6776e.appspot.com",
     messagingSenderId: "136411415099",
     appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
     measurementId: "G-GVS3VG6Y50"
@@ -432,7 +476,9 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
+  let uid = null;
   let receiverId = null;
+  const unreadCounters = {};
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -440,34 +486,65 @@
       return;
     }
 
-    const uid = user.uid;
+    uid = user.uid;
     const token = await user.getIdToken();
 
+    // Load profile
     try {
-      const profile = await fetch(`/api/staff/profile?uid=${uid}`)
-        .then(res => res.json());
-
+      const profile = await fetch(`/api/staff/profile?uid=${uid}`).then(res => res.json());
       document.getElementById('adminName').textContent = profile.name || 'Admin';
 
       const profileImage = document.querySelector('#profileDropdown img');
-      profileImage.src = profile.profile_picture || `https://i.pravatar.cc/36?u=${uid}`;
+      profileImage.src = profile.profile_picture?.data
+        ? `data:image/jpeg;base64,${profile.profile_picture.data}`
+        : `https://i.pravatar.cc/36?u=${uid}`;
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      console.error("Error loading profile:", err);
     }
 
-    const socket = io('https://cardstel.onrender.com', {
-      auth: { token }
-    });
+    // Connect to Socket.IO
+    const socket = io('http://localhost:5000', { auth: { token } });
 
     socket.on('connect', () => console.log('✅ Connected to server'));
 
     socket.on('chat message', (data) => {
       const chatMessages = document.getElementById('chatMessages');
-      const msg = document.createElement('div');
-      msg.className = 'chat-message';
-      msg.textContent = `${data.sender_id}: ${data.content}`;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      const isCurrentChat = (data.sender_id == receiverId || data.receiver_id == receiverId) || (data.department_id && receiverId == data.department_id);
+      const isSelf = data.sender_id === uid;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+      msgDiv.innerHTML = `
+        <img src="https://i.pravatar.cc/36?u=${data.sender_id}" alt="User" class="rounded-circle me-2" width="36" height="36" />
+        <div>
+          <div class="fw-semibold">${isSelf ? 'You' : data.sender_name || 'Them'}</div>
+          <div class="bg-light border rounded p-2">${data.content}</div>
+          <small class="text-muted">${new Date(data.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+        </div>
+      `;
+
+      if (isCurrentChat) {
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } else {
+        unreadCounters[data.sender_id] = (unreadCounters[data.sender_id] || 0) + 1;
+        const userLi = document.querySelector(`#staffListItems li[data-id='${data.sender_id}']`);
+        if (userLi) {
+          userLi.classList.add('has-sent');
+          const counter = userLi.querySelector('.message-counter');
+          if (counter) {
+            counter.textContent = unreadCounters[data.sender_id];
+            counter.style.display = 'inline-block';
+          }
+        }
+
+        if (data.department_id) {
+          const deptLi = document.querySelector(`#departmentCollapse li[data-dept-id='${data.department_id}']`);
+          if (deptLi) {
+            deptLi.classList.add('has-sent');
+          }
+        }
+      }
     });
 
     document.getElementById('chatForm').addEventListener('submit', (e) => {
@@ -476,38 +553,181 @@
       const msg = input.value.trim();
       if (!msg || !receiverId) return;
 
-      socket.emit('chat message', {
+      let emitData = {
         content: msg,
+        sender_id: uid,
+        sender_name: document.getElementById('adminName').textContent,
         type: 'private',
-        receiver_id: receiverId,
-        departmentId: null
-      });
+        receiver_id: null,
+        department_id: null
+      };
+
+      const isDepartment = !!document.querySelector(`#departmentCollapse li[data-dept-id='${receiverId}']`);
+      if (isDepartment) {
+        emitData.type = 'department';
+        emitData.department_id = receiverId;
+      } else {
+        emitData.receiver_id = receiverId;
+      }
+
+      socket.emit('chat message', emitData);
 
       const chatMessages = document.getElementById('chatMessages');
       const selfMsg = document.createElement('div');
-      selfMsg.className = 'chat-message admin';
-      selfMsg.textContent = msg;
+      selfMsg.className = 'chat-message sent';
+      selfMsg.innerHTML = `
+        <img src="https://i.pravatar.cc/36?u=${uid}" alt="You" class="rounded-circle me-2" width="36" height="36" />
+        <div>
+          <div class="fw-semibold">You</div>
+          <div class="bg-light border rounded p-2">${msg}</div>
+          <small class="text-muted">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</small>
+        </div>
+      `;
       chatMessages.appendChild(selfMsg);
       chatMessages.scrollTop = chatMessages.scrollHeight;
       input.value = '';
     });
 
-    // ✅ Fetch and Render Staff List
+    async function loadUserDepartments() {
+      try {
+        const res = await fetch(`/api/departments/user?uid=${uid}`);
+        const departments = await res.json();
+        const deptList = document.getElementById('departmentCollapse');
+        deptList.innerHTML = '';
+
+        if (departments.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'p-2 mb-2 bg-white rounded-3 shadow-sm border text-center text-muted';
+          li.textContent = 'No department added yet';
+          deptList.appendChild(li);
+          return;
+        }
+
+        departments.forEach((dept, index) => {
+          const li = document.createElement('li');
+          li.className = 'p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2';
+          li.style.cursor = 'pointer';
+          li.dataset.deptId = dept.id;
+
+          li.innerHTML = `
+            <i class="fa fa-angle-right text-muted"></i>
+            <span class="text-dark fw-semibold">${dept.name}</span>
+          `;
+
+          li.addEventListener('click', () => {
+            document.querySelectorAll('#departmentCollapse li').forEach(el => el.classList.remove('active'));
+            li.classList.add('active');
+
+            receiverId = dept.id;
+            document.getElementById('chatHeader').textContent = `Department: ${dept.name}`;
+            loadDepartmentChat(dept.id);
+          });
+
+          deptList.appendChild(li);
+        });
+
+        if (departments.length > 0) {
+          deptList.querySelector('li').classList.add('active');
+          receiverId = departments[0].id;
+          document.getElementById('chatHeader').textContent = `Department: ${departments[0].name}`;
+          loadDepartmentChat(departments[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load user departments:', err);
+      }
+    }
+
+    async function loadDepartmentChat(departmentId) {
+      if (!uid) return;
+      try {
+        const response = await fetch(`/api/messages?type=department&department_id=${departmentId}`);
+        const messages = await response.json();
+
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        for (const msg of messages) {
+          const isSelf = String(msg.sender_id) === String(uid);
+
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+
+          const profileImg = msg.sender_profile
+            ? `data:image/jpeg;base64,${msg.sender_profile}`
+            : `https://i.pravatar.cc/36?u=${msg.sender_id}`;
+
+          messageDiv.innerHTML = `
+            <img src="${profileImg}" alt="${isSelf ? 'You' : 'User'}" class="rounded-circle me-2" width="36" height="36" />
+            <div>
+              <div class="fw-semibold">${isSelf ? 'You' : msg.sender_name || 'Unknown'}</div>
+              <div class="bg-light border rounded p-2">${msg.content}</div>
+              <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+            </div>
+          `;
+
+          chatMessages.appendChild(messageDiv);
+        }
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (err) {
+        console.error('Failed to load department chat:', err);
+      }
+    }
+
+    async function loadChatHistory(withUserId) {
+      if (!uid) return;
+
+      try {
+        const response = await fetch(`/api/messages?type=private&user_id=${withUserId}`);
+        const messages = await response.json();
+
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        for (const msg of messages) {
+          const isSelf = String(msg.sender_id) === String(uid);
+
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+
+          const profileImg = msg.sender_profile
+            ? `data:image/jpeg;base64,${msg.sender_profile}`
+            : `https://i.pravatar.cc/36?u=${msg.sender_id}`;
+
+          messageDiv.innerHTML = `
+            <img src="${profileImg}" alt="${isSelf ? 'You' : 'User'}" class="rounded-circle me-2" width="36" height="36" />
+            <div>
+              <div class="fw-semibold">${isSelf ? 'You' : msg.sender_name || 'Unknown'}</div>
+              <div class="bg-light border rounded p-2">${msg.content}</div>
+              <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+            </div>
+          `;
+
+          chatMessages.appendChild(messageDiv);
+        }
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (err) {
+        console.error('❌ Failed to load chat history:', err);
+      }
+    }
+
+    // Staff list loader and first chat setup
+    let firstStaffId = null;
+    let firstStaffName = null;
+
     try {
-      const staffList = await fetch('https://cardstel.onrender.com/api/staff/all')
-        .then(res => res.json());
-
-      const rolePriority = {
-        super_admin: 1,
-        admin: 2,
-        staff: 3
-      };
-
-      staffList.sort((a, b) => rolePriority[a.role] - rolePriority[b.role]);
-
+      const staffList = await fetch('/api/staff/all').then(res => res.json());
       const staffListContainer = document.getElementById('staffListItems');
 
-      staffList.forEach((staff, index) => {
+      const sortedStaff = staffList
+        .filter(staff => staff.firebase_uid !== uid)
+        .sort((a, b) => {
+          const priority = { super_admin: 0, admin: 1, user: 2 };
+          return (priority[a.role] ?? 3) - (priority[b.role] ?? 3);
+        });
+
+      sortedStaff.forEach((staff, index) => {
         const li = document.createElement('li');
         li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
         li.style.cursor = 'pointer';
@@ -515,49 +735,66 @@
 
         let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
         if (staff.profile_picture?.data) {
-          const bufferData = staff.profile_picture.data;
-          const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
-          profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+          try {
+            const bufferData = staff.profile_picture.data;
+            const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
+            profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+          } catch {}
         }
 
-        let roleBadge = '';
-        if (staff.role === 'admin' || staff.role === 'super_admin') {
-          const badgeText = staff.role.replace('_', ' ');
-          roleBadge = `<span class="badge bg-danger-subtle text-danger ms-2 text-capitalize">${badgeText}</span>`;
-        }
+        let badge = '';
+        if (staff.role === 'super_admin') badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
+        else if (staff.role === 'admin') badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
 
         li.innerHTML = `
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2 position-relative w-100">
             <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
             <div class="text-dark fw-semibold d-flex align-items-center">
-              ${staff.name} ${roleBadge}
+              ${staff.name}
+              ${badge}
             </div>
+            <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
           </div>
           <div class="text-success"><i class="fa-solid fa-circle fa-xs"></i></div>
         `;
 
         if (index === 0) {
           li.classList.add('active');
-          receiverId = staff.id;
-          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+          firstStaffId = staff.id;
+          firstStaffName = staff.name;
         }
 
         li.addEventListener('click', () => {
           document.querySelector('#staffListItems li.active')?.classList.remove('active');
           li.classList.add('active');
+
           receiverId = li.dataset.id;
           document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
-          document.getElementById('chatMessages').innerHTML = '';
+          loadChatHistory(receiverId);
+
+          unreadCounters[receiverId] = 0;
+          const counter = li.querySelector('.message-counter');
+          if (counter) {
+            counter.textContent = '0';
+            counter.style.display = 'none';
+          }
         });
 
         staffListContainer.appendChild(li);
       });
-    } catch (err) {
-      console.error('Failed to fetch staff:', err);
-    }
-  }); // ✅ This bracket was missing – now fixed!
-</script>
 
+      await loadUserDepartments();
+
+      if (firstStaffId) {
+        receiverId = firstStaffId;
+        document.getElementById('chatHeader').textContent = `Chat with ${firstStaffName}`;
+        loadChatHistory(receiverId);
+      }
+    } catch (err) {
+      console.error("Failed to fetch staff list:", err);
+    }
+  });
+</script>
 
 
 
