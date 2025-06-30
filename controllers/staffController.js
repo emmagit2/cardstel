@@ -150,11 +150,11 @@ exports.getStaffProfile = async (req, res) => {
 // === Get All Staff Members ===
 exports.getAllStaff = async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM users");
-    res.status(200).json(result.rows);
+    const result = await pool.query('SELECT * FROM users');
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching staff:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
