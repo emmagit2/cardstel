@@ -12,6 +12,44 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET the department of a specific user by uid
+router.get('/user', async (req, res) => {
+  const { uid } = req.query;
+  if (!uid) return res.status(400).json({ message: 'User ID (uid) is required' });
+
+  try {
+    // Find the user's department_id from users table
+    const userResult = await pool.query(
+      'SELECT department_id FROM users WHERE firebase_uid = $1',
+      [uid]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const departmentId = userResult.rows[0].department_id;
+
+    if (!departmentId) {
+      return res.status(404).json({ message: 'User has no department assigned' });
+    }
+
+    // Fetch and return the department
+    const deptResult = await pool.query(
+      'SELECT * FROM departments WHERE id = $1',
+      [departmentId]
+    );
+
+    if (deptResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Department not found' });
+    }
+
+    res.json(deptResult.rows[0]);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST a new department
 router.post('/', async (req, res) => {
   const { name } = req.body;
