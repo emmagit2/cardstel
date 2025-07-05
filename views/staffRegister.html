@@ -2,35 +2,220 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Registration</title>
+  <title>Staff Registration - Cradstel</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f0f2f5;
+    }
+
+    .left-section {
+      width: 50%;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #ffffff;
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      padding: 30px 35px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    .form-container h2 {
+      margin-bottom: 10px;
+      font-size: 26px;
+      color: #333;
+    }
+
+    .form-container p {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .form-container input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+
+    .form-container input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    .form-container button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+
     #loadingSpinner {
       display: none;
       margin-top: 10px;
       font-size: 14px;
       color: #007bff;
+      text-align: center;
     }
+
     #loadingSpinner::before {
       content: "⏳ ";
     }
+
     button[disabled] {
       opacity: 0.6;
       cursor: not-allowed;
     }
+
+    .right-section {
+      width: 50%;
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .right-section h1 {
+      font-size: 48px;
+      margin-bottom: 15px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .right-section p {
+      font-size: 20px;
+      max-width: 400px;
+      animation: fadeInUp 1.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .left-section, .right-section {
+        width: 100%;
+        height: auto;
+      }
+
+      .right-section {
+        padding: 60px 30px;
+      }
+    }
+
+    .upload-label {
+  display: inline-block;
+  width: 100%;
+  padding: 12px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 15px;
+  transition: background 0.3s ease;
+}
+.upload-label:hover {
+  background-color: #218838;
+}
+
+#imagePreviewContainer {
+  width: 100%;
+  display: none;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+#imagePreview {
+  max-width: 100px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+  object-fit: cover;
+}
+
   </style>
 </head>
 <body>
-  <h2>Complete Registration</h2>
-  <form id="registerForm">
-    <input type="text" id="fullName" placeholder="Full Name" required /><br/>
-    <input type="text" id="username" placeholder="Username" required /><br/>
-    <input type="email" id="email" placeholder="Email" readonly /><br/>
-    <input type="password" id="password" placeholder="Password (min 6 characters)" required /><br/>
-    <input type="file" id="photo" accept="image/*" /><br/>
-    <button type="submit" id="registerBtn">Register</button>
-    <div id="loadingSpinner">Processing... Please wait</div>
-  </form>
 
+  <!-- Left Side Form Section -->
+  <div class="left-section">
+    <div class="form-container">
+      <h2>Complete Your Registration</h2>
+      <p>Welcome! Please fill in your details to join your team at Cradstel.</p>
+      <form id="registerForm">
+        <input type="text" id="fullName" placeholder="Full Name" required />
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="email" id="email" placeholder="Email" readonly />
+        <input type="password" id="password" placeholder="Password (min 6 characters)" required />
+<!-- Replace this line -->
+<!-- <input type="file" id="photo" accept="image/*" /> -->
+
+<!-- With this block -->
+<label for="photo" class="upload-label">
+  <span>📷 Upload Profile Photo</span>
+  <input type="file" id="photo" accept="image/*" hidden />
+</label>
+<div id="imagePreviewContainer">
+  <img id="imagePreview" src="" alt="Preview" />
+</div>
+        <button type="submit" id="registerBtn">Register</button>
+        <div id="loadingSpinner">Processing... Please wait</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Side Gradient Section -->
+  <div class="right-section">
+    <h1>Cardstel Solutions</h1>
+    <p>Welcome onboard! You're almost there. Join Cardstel solutions. as a staff member and start chatting, sharing, and collaborating with others in one smart platform.</p>
+  </div>
+
+  <!-- Firebase Auth Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -95,15 +280,12 @@
       let photo_url = null;
 
       try {
-        // Show loading spinner & disable button
         loadingSpinner.style.display = 'block';
         registerBtn.disabled = true;
 
-        // Step 1: Create Firebase user
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         firebaseUser = userCred.user;
 
-        // Step 2: Upload photo if provided
         if (photo) {
           const formData = new FormData();
           formData.append('photo', photo);
@@ -116,7 +298,6 @@
           photo_url = uploadData.photo_url;
         }
 
-        // Step 3: Send data to backend
         const res = await fetch('/api/staff/complete-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -150,11 +331,31 @@
         }
         alert('❌ ' + err.message);
       } finally {
-        // Always hide spinner and enable button again
         loadingSpinner.style.display = 'none';
         registerBtn.disabled = false;
       }
     });
+
+    const photoInput = document.getElementById('photo');
+const previewContainer = document.getElementById('imagePreviewContainer');
+const previewImage = document.getElementById('imagePreview');
+
+photoInput.addEventListener('change', function () {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    previewContainer.style.display = 'block';
+
+    reader.addEventListener('load', function () {
+      previewImage.setAttribute('src', this.result);
+    });
+
+    reader.readAsDataURL(file);
+  } else {
+    previewContainer.style.display = 'none';
+  }
+});
+
   </script>
 </body>
 </html>
