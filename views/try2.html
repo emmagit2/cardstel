@@ -1,207 +1,139 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardstel Admin Chat UI</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
+const attachBtn = document.getElementById('attachBtn');
+const attachMenu = document.getElementById('attachMenu');
+const filePhoto = document.getElementById('filePhoto');
+const fileDocument = document.getElementById('fileDocument');
+const fileAudio = document.getElementById('fileAudio');
+
+attachBtn.addEventListener('click', () => {
+  attachMenu.style.display = attachMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (e) => {
+  if (!attachMenu.contains(e.target) && e.target !== attachBtn) {
+    attachMenu.style.display = 'none';
+  }
+});
+
+document.querySelectorAll('.attachOption').forEach(button => {
+  button.addEventListener('click', () => {
+    const type = button.dataset.type;
+    attachMenu.style.display = 'none';
+
+    if (type === 'photo') filePhoto.click();
+    else if (type === 'document') fileDocument.click();
+    else if (type === 'audio') fileAudio.click();
+  });
+});
+
+// Helper function to upload and show file in chat
+async function uploadFile(file, endpoint, messageType) {
+  const messageContainer = document.getElementById('chatMessages');
+
+  // Create temp message UI with sending label
+  const tempMsgDiv = document.createElement('div');
+  tempMsgDiv.className = 'message ' + messageType + ' sending';
+
+  let fileElement;
+  if (messageType === 'image') {
+    fileElement = document.createElement('img');
+    fileElement.src = URL.createObjectURL(file);
+    fileElement.style.maxWidth = '150px';
+  } else if (messageType === 'document') {
+    fileElement = document.createElement('a');
+    fileElement.href = '#';
+    fileElement.textContent = file.name;
+    fileElement.target = '_blank';
+  } else if (messageType === 'audio') {
+    fileElement = new Audio(URL.createObjectURL(file));
+    fileElement.controls = true;
+  }
+
+  const statusLabel = document.createElement('small');
+  statusLabel.textContent = 'Sending...';
+  statusLabel.className = 'sending-label';
+
+  tempMsgDiv.appendChild(fileElement);
+  tempMsgDiv.appendChild(statusLabel);
+  messageContainer.appendChild(tempMsgDiv);
+
+  // Emit temp socket message with local file preview (optional)
+  socket.emit('chat message', {
+    content: `[${messageType.charAt(0).toUpperCase() + messageType.slice(1)} message]`,
+    file_url: URL.createObjectURL(file),
+    file_type: file.type,
+    file_name: file.name,
+    message_type: messageType,
+    sender_id: currentUserId,
+    receiver_id: receiverId,
+    sender_name: document.getElementById('adminName').textContent,
+    chat_type: 'private',
+    is_temp: true,
+  });
+
+  // Prepare form data
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('sender_id', currentUserId);
+  formData.append('receiver_id', receiverId);
+  formData.append('chat_type', 'private');
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await res.json();
+
+    // Update UI with final file URL and "Sent" label
+    if (messageType === 'image') {
+      fileElement.src = result.file_url;
+    } else if (messageType === 'document') {
+      fileElement.href = result.file_url;
+    } else if (messageType === 'audio') {
+      fileElement.src = result.file_url;
+      fileElement.load();
     }
 
-    body {
-      display: flex;
-    }
+    statusLabel.textContent = 'Sent';
+    statusLabel.style.color = 'green';
+    tempMsgDiv.classList.remove('sending');
 
-    #sidebar {
-      width: 250px;
-      background-color: #f8f9fa;
-      padding: 1rem;
-      border-right: 1px solid #dee2e6;
-      height: 100vh;
-      overflow-y: auto;
-    }
+    // Emit socket event with final message info
+    socket.emit('chat message', {
+      content: `[${messageType.charAt(0).toUpperCase() + messageType.slice(1)} message]`,
+      file_url: result.file_url,
+      file_type: result.file_type,
+      file_name: result.file_name,
+      message_type: messageType,
+      sender_id: currentUserId,
+      receiver_id: receiverId,
+      sender_name: document.getElementById('adminName').textContent,
+      chat_type: 'private',
+    });
 
-    #mainContent {
-      display: flex;
-      flex-grow: 1;
-      height: 100vh;
-      overflow: hidden;
-    }
+  } catch (err) {
+    console.error(`${messageType} upload failed:`, err);
+    statusLabel.textContent = 'Upload failed';
+    statusLabel.style.color = 'red';
+  }
+}
 
-    #chatListContainer {
-      width: 300px;
-      padding: 1rem;
-      border-right: 1px solid #dee2e6;
-      overflow-y: auto;
-    }
+// File input change handlers
+filePhoto.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    uploadFile(e.target.files[0], '/api/messages/send/image', 'image');
+  }
+});
 
-    .chat-group {
-      display: none;
-    }
+fileDocument.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    uploadFile(e.target.files[0], '/api/messages/send/file', 'document');
+  }
+});
 
-    .chat-group.active {
-      display: block;
-    }
-
-    #chatUI {
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    #messagesContainer {
-      flex-grow: 1;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    .chatListGroup {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    .chatListGroup li {
-      padding: 5px 0;
-    }
-
-    .list-group-item {
-      cursor: pointer;
-    }
-
-    .list-group-item:hover {
-      background-color: #e9ecef;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Sidebar -->
-  <aside id="sidebar">
-    <p class="fw-bold mb-3"><i class="fa-solid fa-house"></i> cardstel</p>
-
-    <!-- Sidebar Navigation -->
-    <ul class="list-group mb-4">
-      <li class="list-group-item" onclick="showChatGroup('chatsGroup')">
-        <i class="fa-solid fa-comments me-2"></i> Chats
-      </li>
-      <li class="list-group-item" onclick="showChatGroup('departmentsGroup')">
-        <i class="fa-solid fa-building me-2"></i> Departments
-      </li>
-      <li class="list-group-item" onclick="showChatGroup('staffGroup')">
-        <i class="fa-solid fa-user-group me-2"></i> Staff
-      </li>
-      <li class="list-group-item" onclick="showChatGroup('settingsGroup')">
-        <i class="fa-solid fa-gear me-2"></i> Settings
-      </li>
-    </ul>
-  </aside>
-
-  <!-- Main Content -->
-  <main id="mainContent">
-    
-    <!-- Dynamic Chat List Container -->
-    <div id="chatListContainer">
-
-      <!-- Chats Group -->
-      <div class="chat-group active" id="chatsGroup">
-      <h3>Chats</h3>
-
-      <!-- Departments -->
-      <div class="chat-groups">
-        <label>Departments</label>
-        <input type="text" class="searchInput form-control mb-2" data-target="departmentList" placeholder="Search departments..." />
-        <ul id="departmentLists" class="chatListGroup">
-          <li>HR</li>
-          <li>Finance</li>
-          <li>Engineering</li>
-          <li>Design</li>
-        </ul>
-      </div>
-
-      <!-- Staff -->
-      <div class="chat-groups mt-4">
-        <label>Staff</label>
-        <input type="text" class="searchInput form-control mb-2" data-target="staffList" placeholder="Search staff..." />
-        <ul id="staffList" class="chatListGroup">
-          <li>John Doe</li>
-          <li>Jane Smith</li>
-          <li>Chris James</li>
-        </ul>
-      </div>
-
-      <!-- Admin -->
-      <div class="chat-groups mt-4">
-        <label>Admins</label>
-        <input type="text" class="searchInput form-control mb-2" data-target="adminList" placeholder="Search admins..." />
-        <ul id="adminList" class="chatListGroup">
-          <li>Admin Alpha</li>
-          <li>Admin Beta</li>
-        </ul>
-      </div>
-    </div>
-
-
-      <!-- Departments Group -->
-      <div class="chat-group" id="departmentsGroup">
-        <label>Departments</label>
-        <input type="text" class="searchInput form-control mb-2" data-target="departmentList" placeholder="Search departments..." />
-        <ul id="departmentLists" class="chatListGroup">
-          <li>HR</li>
-          <li>Finance</li>
-          <li>Engineering</li>
-          <li>Design</li>
-        </ul>
-        <button id="addDepartmentBtn" class="btn btn-primary btn-sm mt-2">+ Add Department</button>
-      </div>
-
-      <!-- Staff Group -->
-      <div class="chat-group" id="staffGroup">
-        <label>Staff</label>
-        <input type="text" class="searchInput form-control mb-2" data-target="staffList" placeholder="Search staff..." />
-        <ul id="staffList" class="chatListGroup">
-          <li>John Doe</li>
-          <li>Jane Smith</li>
-          <li>Chris James</li>
-        </ul>
-        <button class="btn btn-success btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#addStaffModal">+ Add Staff</button>
-      </div>
-
-      <!-- Settings Group -->
-      <div class="chat-group" id="settingsGroup">
-        <label>Settings</label>
-        <p class="text-muted">Settings options will appear here.</p>
-      </div>
-    </div>
-
-    <!-- Right Chat UI -->
-    <div id="chatUI">
-      <header id="chatHeader" class="mb-3"><strong>Select a chat</strong></header>
-      <div id="messagesContainer"></div>
-      <form id="chatForm" class="d-flex gap-2">
-        <input type="text" id="messageInput" class="form-control" placeholder="Type a message..." autocomplete="off" required />
-        <button type="submit" id="sendBtn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
-      </form>
-    </div>
-
-  </main>
-
-  <!-- JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function showChatGroup(groupId) {
-      document.querySelectorAll('.chat-group').forEach(group => {
-        group.classList.remove('active');
-      });
-      document.getElementById(groupId).classList.add('active');
-    }
-  </script>
-</body>
-</html>
+fileAudio.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    uploadFile(e.target.files[0], '/api/messages/send/voice', 'audio');
+  }
+});

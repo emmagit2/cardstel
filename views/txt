@@ -1,0 +1,15 @@
+-- File URL (voice, image, or document)
+ALTER TABLE messages
+ADD COLUMN file_url TEXT;
+
+-- File MIME type (e.g., audio/mpeg, image/png, application/pdf)
+ALTER TABLE messages
+ADD COLUMN file_type VARCHAR(100);
+
+-- Original file name (e.g., voice123.mp3, report.pdf)
+ALTER TABLE messages
+ADD COLUMN file_name VARCHAR(255);
+
+-- Type of message (text, image, document, voice)
+ALTER TABLE messages
+ADD COLUMN message_type VARCHAR(20) DEFAULT 'text';

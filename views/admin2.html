@@ -370,6 +370,11 @@
   border-radius: 6px;
   cursor: pointer;
 }
+.smaal{
+text-align:left;
+
+
+}
 
   .gradient-header {
     background: linear-gradient(135deg, #1f2937, #111827); /* Dark slate gradient */
@@ -1045,12 +1050,9 @@ border-radius: 8px;
 
   let socket;
   let currentUserId = null;
-
-  // Track current chat type and id
   let currentChatType = null; // 'private' or 'department'
-  let currentChatId = null;   // user id or department id
+  let currentChatId = null;
 
-  // DOM references
   const departmentLis = document.getElementById('departmentLis');
   const staffList = document.getElementById('staffList');
   const adminList = document.getElementById('adminList');
@@ -1065,245 +1067,173 @@ border-radius: 8px;
     const token = await user.getIdToken();
 
     socket = io('http://localhost:5000', { auth: { token } });
-    socket.on('connect', () => console.log('✅ Connected to chat server'));
+socket.on('connect', () => {
+  console.log('✅ Connected');
+  socket.emit('joinRoom', currentUserId);  // 🔧 <--- Add this line!
+});
+  socket.on('chat message', handleIncomingMessage);
 
-    // Listen for incoming chat messages (both private and department)
-    socket.on('chat message', (data) => {
-      let isRelevant = false;
-
-      if (currentChatType === 'private') {
-        isRelevant =
-          (data.sender_id === currentChatId && data.receiver_id === currentUserId) ||
-          (data.sender_id === currentUserId && data.receiver_id === currentChatId);
-      } else if (currentChatType === 'department') {
-        isRelevant = data.type === 'department' && data.department_id === currentChatId;
-      }
-
-      if (!isRelevant) return;
-
-      appendMessage(data);
-    });
-
-    // Load users and departments on page load
     await loadAndRenderUsers();
     await loadAndRenderDepartments();
+    setupChatForm();
+  });
 
-    // Handle sending message form submission
+  function handleIncomingMessage(data) {
+    const isRelevant = (
+      currentChatType === 'private' &&
+      (
+        (data.sender_id === currentChatId && data.receiver_id === currentUserId) ||
+        (data.sender_id === currentUserId && data.receiver_id === currentChatId)
+      )
+    ) || (
+      currentChatType === 'department' &&
+      data.type === 'department' &&
+      data.department_id === currentChatId
+    );
+
+    if (!isRelevant) return;
+
+    appendMessage({
+      ...data,
+      isSelf: data.sender_id === currentUserId
+    });
+  }
+
+  function setupChatForm() {
     document.getElementById('chatForm').addEventListener('submit', (e) => {
       e.preventDefault();
+
       const input = document.getElementById('chatInput');
       const msg = input.value.trim();
       if (!msg || !currentChatId || !currentChatType) return;
 
-      let messageData;
-
-      if (currentChatType === 'private') {
-        messageData = {
-          content: msg,
-          type: 'private',
-          sender_id: currentUserId,
-          receiver_id: currentChatId,
-          department_id: null
-        };
-      } else if (currentChatType === 'department') {
-        messageData = {
-          content: msg,
-          type: 'department',
-          sender_id: currentUserId,
-          receiver_id: null,
-          department_id: currentChatId
-        };
-      } else {
-        return;
-      }
+      const messageData = {
+        content: msg,
+        chat_type: currentChatType, // ✅ correct key name
+        sender_id: currentUserId,
+        receiver_id: currentChatType === 'private' ? currentChatId : null,
+        department_id: currentChatType === 'department' ? currentChatId : null
+      };
 
       socket.emit('chat message', messageData);
       appendMessage({ ...messageData, isSelf: true });
       input.value = '';
     });
-  });
+  }
 
-  // Load and render department list
   async function loadAndRenderDepartments() {
-    try {
-      const res = await fetch('http://localhost:5000/api/departments');
-      const departments = await res.json();
+    const res = await fetch('/api/departments');
+    const departments = await res.json();
 
-      departmentLis.innerHTML = '';
+    departmentLis.innerHTML = '';
 
-      departments.forEach(dept => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center text-dark px-2 py-2 mt-2 custom-boder custom-bg';
-        li.style.cursor = 'pointer';
-        li.textContent = dept.name;
-        li.dataset.deptId = dept.id;
+    departments.forEach(dept => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item';
+      li.textContent = dept.name;
+      li.style.cursor = 'pointer';
 
-        li.addEventListener('click', () => {
-          // Remove active class from all users and departments
-          document.querySelectorAll('#staffList li, #adminList li, #departmentLis li').forEach(el => el.classList.remove('active'));
-          li.classList.add('active');
-
-          currentChatType = 'department';
-          currentChatId = dept.id;
-
-          document.getElementById('chatHeader').textContent = `Chat with Department: ${dept.name}`;
-          document.getElementById('chatMessages').innerHTML = '';
-
-          loadChatMessages(currentChatType, currentChatId);
-        });
-
-        departmentLis.appendChild(li);
-      });
-    } catch (err) {
-      console.error('Failed to load departments:', err);
-    }
-  }
-
-  // Load and render users (admins and staff)
-  async function loadAndRenderUsers() {
-    try {
-      const res = await fetch('/api/staff/all');
-      const users = await res.json();
-
-      staffList.innerHTML = '';
-      adminList.innerHTML = '';
-
-      const admins = users.filter(u => u.role === 'admin');
-      const staff = users.filter(u => u.role !== 'admin');
-
-      function createUserItem(user) {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex align-items-center justify-content-between gap-3 custom-boder custom-bg px-2 py-2 mt-2';
-        li.style.cursor = 'pointer';
-
-        const img = `https://i.pravatar.cc/36?u=${user.firebase_uid}`;
-        const name = user.name || 'Unknown';
-        const isOnline = user.status?.toLowerCase() === 'active';
-
-        li.innerHTML = `
-          <div class="relative-position d-flex align-items-center gap-2">
-            <img src="${img}" alt="${name}" class="rounded-circle" />
-            <span class="fw-medium">${name}</span>
-          </div>
-          <span class="${isOnline ? 'text-success' : 'text-dark'} fw-medium">● ${isOnline ? 'Active' : 'Offline'}</span>
-        `;
-
-        li.addEventListener('click', () => {
-          document.querySelectorAll('#staffList li, #adminList li, #departmentLis li').forEach(el => el.classList.remove('active'));
-          li.classList.add('active');
-
-          currentChatType = 'private';
-          currentChatId = user.id;
-
-          document.getElementById('chatHeader').textContent = `Chat with ${name}`;
-          document.getElementById('chatMessages').innerHTML = '';
-
-          loadChatMessages(currentChatType, currentChatId);
-        });
-
-        return li;
-      }
-
-      if (admins.length === 0) {
-        adminList.innerHTML = '<li class="list-group-item text-center text-muted">No admins added</li>';
-      } else {
-        admins.forEach(admin => adminList.appendChild(createUserItem(admin)));
-      }
-
-      if (staff.length === 0) {
-        staffList.innerHTML = '<li class="list-group-item text-center text-muted">No staff added</li>';
-      } else {
-        staff.forEach(s => staffList.appendChild(createUserItem(s)));
-      }
-
-      // Auto-select first user available
-      const firstUser = admins[0] || staff[0];
-      if (firstUser) {
-        currentChatType = 'private';
-        currentChatId = firstUser.id;
-        document.getElementById('chatHeader').textContent = `Chat with ${firstUser.name}`;
-
-        // Add active class to first user item
-        const selector = firstUser.role === 'admin' ? '#adminList li' : '#staffList li';
-        document.querySelector(selector)?.classList.add('active');
-
+      li.addEventListener('click', () => {
+        clearActive();
+        li.classList.add('active');
+        currentChatType = 'department';
+        currentChatId = dept.id;
+        document.getElementById('chatHeader').textContent = `Dept: ${dept.name}`;
+        document.getElementById('chatMessages').innerHTML = '';
         loadChatMessages(currentChatType, currentChatId);
-      }
+      });
 
-    } catch (err) {
-      console.error('Failed to fetch users:', err);
+      departmentLis.appendChild(li);
+    });
+  }
+
+  async function loadAndRenderUsers() {
+    const res = await fetch('/api/staff/all');
+    const users = await res.json();
+
+    staffList.innerHTML = '';
+    adminList.innerHTML = '';
+
+    const admins = users.filter(u => u.role === 'admin');
+    const staff = users.filter(u => u.role !== 'admin');
+
+    function createUserItem(user) {
+      const li = document.createElement('li');
+      li.className = 'list-group-item';
+      li.style.cursor = 'pointer';
+      li.innerHTML = `
+        <img src="https://i.pravatar.cc/36?u=${user.firebase_uid}" class="rounded-circle me-2" />
+        <span>${user.name}</span>
+      `;
+
+      li.addEventListener('click', () => {
+        clearActive();
+        li.classList.add('active');
+        currentChatType = 'private';
+        currentChatId = user.id;
+        document.getElementById('chatHeader').textContent = user.name;
+        document.getElementById('chatMessages').innerHTML = '';
+        loadChatMessages('private', user.id);
+      });
+
+      return li;
+    }
+
+    admins.forEach(a => adminList.appendChild(createUserItem(a)));
+    staff.forEach(s => staffList.appendChild(createUserItem(s)));
+
+    const first = admins[0] || staff[0];
+    if (first) {
+      const selector = first.role === 'admin' ? adminList : staffList;
+      const li = selector.querySelector('li');
+      li.click();
     }
   }
 
-  // Load chat messages for current chat
+  function clearActive() {
+    document.querySelectorAll('#staffList li, #adminList li, #departmentLis li').forEach(el => {
+      el.classList.remove('active');
+    });
+  }
+
   async function loadChatMessages(type, id) {
-    let url;
-    if (type === 'private') {
-      url = `/api/messages?type=private&user_id=${id}`;
-    } else if (type === 'department') {
-      url = `/api/messages?type=department&department_id=${id}`;
-    } else {
-      return;
-    }
+    let url = '/api/messages?';
+    url += type === 'private'
+      ? `type=private&user_id=${id}`
+      : `type=department&department_id=${id}`;
 
-    try {
-      const res = await fetch(url);
-      const messages = await res.json();
+    const res = await fetch(url);
+    const messages = await res.json();
 
-      const chatMessages = document.getElementById('chatMessages');
-      chatMessages.innerHTML = '';
+    document.getElementById('chatMessages').innerHTML = '';
 
-      messages.forEach(msg => {
-        appendMessage({
-          content: msg.content,
-          sender_id: msg.sender_id,
-          isSelf: msg.sender_id === currentUserId,
-          type: msg.type,
-          department_id: msg.department_id,
-          receiver_id: msg.receiver_id,
-          sent_at: msg.sent_at
-        });
+    messages.forEach(msg => {
+      appendMessage({
+        ...msg,
+        isSelf: msg.sender_id === currentUserId
       });
-    } catch (err) {
-      console.error('Failed to load chat messages:', err);
-    }
+    });
   }
 
   function appendMessage(data) {
-  const chatMessages = document.getElementById('chatMessages');
+    const chatMessages = document.getElementById('chatMessages');
 
-  const wrapper = document.createElement('div');
-  wrapper.className = `d-flex flex-column ${data.isSelf ? 'align-items-end' : 'align-items-start'} mb-3`;
+    const wrapper = document.createElement('div');
+    wrapper.className = data.isSelf ? 'text-end mb-2' : 'text-start mb-2';
 
-  const bubble = document.createElement('div');
-  bubble.className = `p-2 rounded-3 ${data.isSelf ? 'bg-primary text-white' : 'bg-light text-dark'}`;
-  bubble.style.maxWidth = '75%';
-  bubble.style.wordBreak = 'break-word';
-  bubble.textContent = data.content;
+    wrapper.innerHTML = `
+      <div class="${data.isSelf ? 'bg-primary text-white' : 'bg-light text-dark'} p-2 rounded smaal">
+        ${!data.isSelf && data.sender_name ? `<div class="small fw-bold">${data.sender_name}</div>` : ''}
+        ${data.content}
+      </div>
+      <small class="text-muted">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</small>
+    `;
 
-  // Timestamp
-  const timestamp = document.createElement('small');
-  timestamp.className = `mt-1 text-muted ${data.isSelf ? 'text-end' : 'text-start'}`;
-
-  // Format timestamp if available
-  const time = data.sent_at ? new Date(data.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-  timestamp.textContent = time;
-
-  // Sender label for received messages
-  if (!data.isSelf && data.sender_name) {
-    const senderLabel = document.createElement('div');
-    senderLabel.className = 'fw-semibold text-primary small mb-1';
-    senderLabel.textContent = data.sender_name;
-    wrapper.appendChild(senderLabel);
+    chatMessages.appendChild(wrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
-
-  wrapper.appendChild(bubble);
-  wrapper.appendChild(timestamp);
-
-  chatMessages.appendChild(wrapper);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
 </script>
+
  <script>
     function showChatGroup(groupId) {
       document.querySelectorAll('.chat-group').forEach(group => {

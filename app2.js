@@ -8,8 +8,7 @@ const { Server } = require('socket.io');
 const authRoutes = require('./routes/authRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const staffRoutes = require('./routes/staffRoutes');
-const messageRoutes = require('./routes/messageRoute');
-
+const messageRoutes = require('./routes/messageRoutes'); // ✅ ensure filename matches
 
 const initChatSocket = require('./sockets/chatSocket');
 
@@ -19,30 +18,33 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-// Middlewares
+// ✅ MIDDLEWARES
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// ✅ STATIC FILES
+app.use(express.static('public')); // For frontend assets (if any)
+app.use('/uploads/audio', express.static(path.join(__dirname, 'uploads/audio'))); // ✅ Serve uploaded voice files
+
+// ✅ ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/messages', messageRoutes);
 
-
-// Views
+// ✅ VIEWS (HTML PAGES)
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'views/auth.html')));
 app.get('/admin2.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin2.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'views/admin.html')));
 app.get('/staff-register', (req, res) => res.sendFile(path.join(__dirname, 'views/staffRegister.html')));
 app.get('/staffdashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'views/staffdashboard.html')));
 
-// 🔌 Initialize Socket.IO logic
+// ✅ SOCKET.IO INIT
 initChatSocket(io);
 
-// Start server
+// ✅ START SERVER
 const PORT = 5000;
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

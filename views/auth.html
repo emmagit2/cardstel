@@ -3,25 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login</title>
+  <title>Cradstel Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
+    * {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     body {
-      background: linear-gradient(to right, #ece9e6, #ffffff);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .left-section {
+      width: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
     }
+
     .login-container {
       background: white;
       padding: 2rem 2.5rem;
       border-radius: 1rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      max-width: 420px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
       width: 100%;
     }
+
+    .right-section {
+      width: 50%;
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .right-section h1 {
+      font-size: 42px;
+      margin-bottom: 20px;
+    }
+
+    .right-section p {
+      font-size: 18px;
+      max-width: 380px;
+    }
+
     .google-btn {
       background-color: #fff;
       color: #444;
@@ -33,57 +66,98 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 10px;
-      transition: all 0.3s ease;
+      margin-top: 15px;
+      transition: background 0.3s ease;
     }
+
     .google-btn:hover {
       background-color: #f0f0f0;
     }
+
     .google-btn img {
       width: 20px;
       height: 20px;
       margin-right: 10px;
     }
+
     .error-message {
       color: red;
       margin-top: 1rem;
       font-weight: 600;
       min-height: 24px;
     }
+
+    #loadingSpinner {
+      font-size: 14px;
+      color: #007bff;
+      margin-top: 12px;
+      display: none;
+      text-align: center;
+    }
+
+    #loadingSpinner::before {
+      content: "⏳ ";
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .left-section, .right-section {
+        width: 100%;
+        height: 50%;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <h4 class="mb-4 text-center">Welcome Back</h4>
+  <!-- Left Side -->
+  <div class="left-section">
+    <div class="login-container">
+      <h4 class="mb-4 text-center">Welcome Back</h4>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="emailInput" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="emailInput" placeholder="you@example.com" required />
+        </div>
+        <div class="mb-3">
+          <label for="passwordInput" class="form-label">Password</label>
+          <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="loginBtn">Sign In</button>
+      </form>
 
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="emailInput" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="emailInput" placeholder="you@example.com" required />
-      </div>
-      <div class="mb-3">
-        <label for="passwordInput" class="form-label">Password</label>
-        <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" required />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Sign In</button>
-    </form>
+      <button class="google-btn" onclick="loginWithGoogle()" id="googleBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" />
+        Sign in with Google
+      </button>
 
-    <!-- Google Login -->
-    <button class="google-btn" onclick="loginWithGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" />
-      Sign in with Google
-    </button>
+      <div id="loadingSpinner">Logging in... Please wait</div>
+      <div class="error-message" id="errorMsg"></div>
+    </div>
+  </div>
 
-    <div class="error-message" id="errorMsg"></div>
+  <!-- Right Side -->
+  <div class="right-section">
+    <h1>Welcome to Cradstel</h1>
+    <p>Sign in to access your dashboard, collaborate with your team, and manage smarter. Your journey starts here.</p>
   </div>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-<script>
-      const firebaseConfig = {
+  <script>
+
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000/api/auth/login"  // Change port to your local backend port
+  : "https://cardstel.onrender.com/api/auth/login";
+
+
+
+    const firebaseConfig = {
       apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
       authDomain: "chat-app-6776e.firebaseapp.com",
       projectId: "chat-app-6776e",
@@ -92,123 +166,132 @@
       appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
       measurementId: "G-GVS3VG6Y50"
     };
-    
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const loginForm = document.getElementById("loginForm");
-  const errorMsg = document.getElementById("errorMsg");
 
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorMsg.textContent = "";
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    const email = document.getElementById("emailInput").value.trim();
-    const password = document.getElementById("passwordInput").value;
+    const loginForm = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const loginBtn = document.getElementById("loginBtn");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const googleBtn = document.getElementById("googleBtn");
 
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      const idToken = await userCredential.user.getIdToken();
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = "";
+      loginBtn.disabled = true;
+      loadingSpinner.style.display = "block";
 
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: idToken })
-      });
+      const email = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value;
 
-      const result = await response.json();
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const idToken = await userCredential.user.getIdToken();
 
-      if (response.ok && result.success) {
-        const role = result.user.role;
+        const response = await fetch(BASE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: idToken })
+        });
 
-        if (role === "super_admin") {
-          window.location.href = "/admin2.html";
-        } else if (role === "admin") {
-          window.location.href = "/admin.html";
-        } else if (role === "staff") {
-          window.location.href = "/staffdashboard.html";
-        } else {
-          errorMsg.textContent = "Invalid user role.";
-        }
-      } else {
-        errorMsg.textContent = result.message || "Login failed.";
-      }
+        const result = await response.json();
 
-    } catch (error) {
-      console.error(error);
-      errorMsg.textContent = error.message;
-    }
-  });
+        if (response.ok && result.success) {
+          const role = result.user.role;
 
-  window.loginWithGoogle = async function() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    try {
-      const currentUser = auth.currentUser;
-
-      if (currentUser) {
-        // Try to link Google provider to current user
-        try {
-          const linkResult = await currentUser.linkWithPopup(provider);
-          const idToken = await linkResult.user.getIdToken();
-          await sendTokenToBackend(idToken);
-        } catch (linkError) {
-          if (linkError.code === 'auth/credential-already-in-use') {
-            // Google account linked to another user - sign in directly
-            const result = await auth.signInWithPopup(provider);
-            const idToken = await result.user.getIdToken();
-            await sendTokenToBackend(idToken);
-          } else if (linkError.code === 'auth/provider-already-linked') {
-            // Google provider already linked to current user
-            const idToken = await currentUser.getIdToken();
-            await sendTokenToBackend(idToken);
+          if (role === "super_admin") {
+            window.location.href = "/admin2.html";
+          } else if (role === "admin") {
+            window.location.href = "/admin.html";
+          } else if (role === "staff") {
+            window.location.href = "/staffdashboard.html";
           } else {
-            throw linkError;
+            errorMsg.textContent = "Invalid user role.";
           }
-        }
-      } else {
-        // No user signed in, normal Google sign-in
-        const result = await auth.signInWithPopup(provider);
-        const idToken = await result.user.getIdToken();
-        await sendTokenToBackend(idToken);
-      }
-    } catch (error) {
-      console.error(error);
-      errorMsg.textContent = error.message;
-    }
-  };
-
-  async function sendTokenToBackend(idToken) {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: idToken })
-      });
-
-      const resJson = await response.json();
-
-      if (response.ok && resJson.success) {
-        const role = resJson.user.role;
-
-        if (role === "super_admin") {
-          window.location.href = "/admin2.html";
-        } else if (role === "admin") {
-          window.location.href = "/admin.html";
-        } else if (role === "staff") {
-          window.location.href = "/staffdashboard.html";
         } else {
-          errorMsg.textContent = "Invalid user role.";
+          errorMsg.textContent = result.message || "Login failed.";
         }
-      } else {
-        errorMsg.textContent = resJson.message || "Google sign-in failed.";
+      } catch (error) {
+        console.error(error);
+        errorMsg.textContent = error.message;
+      } finally {
+        loginBtn.disabled = false;
+        loadingSpinner.style.display = "none";
       }
-    } catch (err) {
-      console.error(err);
-      errorMsg.textContent = "Network error during sign-in.";
-    }
-  }
+    });
 
- </script>
+    async function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      errorMsg.textContent = "";
+      googleBtn.disabled = true;
+      loadingSpinner.style.display = "block";
+
+      try {
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          try {
+            const linkResult = await currentUser.linkWithPopup(provider);
+            const idToken = await linkResult.user.getIdToken();
+            await sendTokenToBackend(idToken);
+          } catch (linkError) {
+            if (linkError.code === 'auth/credential-already-in-use') {
+              const result = await auth.signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              await sendTokenToBackend(idToken);
+            } else if (linkError.code === 'auth/provider-already-linked') {
+              const idToken = await currentUser.getIdToken();
+              await sendTokenToBackend(idToken);
+            } else {
+              throw linkError;
+            }
+          }
+        } else {
+          const result = await auth.signInWithPopup(provider);
+          const idToken = await result.user.getIdToken();
+          await sendTokenToBackend(idToken);
+        }
+      } catch (error) {
+        console.error(error);
+        errorMsg.textContent = error.message;
+      } finally {
+        googleBtn.disabled = false;
+        loadingSpinner.style.display = "none";
+      }
+    }
+
+    async function sendTokenToBackend(idToken) {
+      try {
+        const response = await fetch(BASE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: idToken })
+        });
+
+        const resJson = await response.json();
+
+        if (response.ok && resJson.success) {
+          const role = resJson.user.role;
+
+          if (role === "super_admin") {
+            window.location.href = "/admin2.html";
+          } else if (role === "admin") {
+            window.location.href = "/admin.html";
+          } else if (role === "staff") {
+            window.location.href = "/staffdashboard.html";
+          } else {
+            errorMsg.textContent = "Invalid user role.";
+          }
+        } else {
+          errorMsg.textContent = resJson.message || "Google sign-in failed.";
+        }
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = "Network error during sign-in.";
+      }
+    }
+  </script>
 
 </body>
 </html>
