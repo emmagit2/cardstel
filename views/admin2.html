@@ -1066,7 +1066,7 @@ border-radius: 8px;
     currentUserId = user.uid;
     const token = await user.getIdToken();
 
-    socket = io('http://localhost:5000', { auth: { token } });
+    socket = io('https://cardstel.onrender.com', { auth: { token } });
 socket.on('connect', () => {
   console.log('✅ Connected');
   socket.emit('joinRoom', currentUserId);  // 🔧 <--- Add this line!
@@ -1496,7 +1496,7 @@ function renderUser(user, container) {
 // Load users and categorize into staff/admin
 async function loadUsers() {
   try {
-    const res = await fetch('http://localhost:5000/api/staff/all');
+    const res = await fetch('https://cardstel.onrender.com/api/staff/all');
     const users = await res.json();
 
     const staffList = document.getElementById('staffShow');
