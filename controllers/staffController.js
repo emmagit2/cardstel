@@ -2,9 +2,7 @@ const pool = require('../db');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// === Admin Sends Invite ===
-
-// === Admin Sends Invite ===
+// === 1. Admin Sends Invite ===
 exports.sendInvite = async (req, res) => {
   const { email, role, department_id } = req.body;
 
@@ -28,10 +26,9 @@ exports.sendInvite = async (req, res) => {
       await pool.query(`
         INSERT INTO staff_invites(email, role, department_id, token, invited_by)
         VALUES ($1, $2, $3, $4, $5)
-      `, [email, role, department_id || null, token, 1]);
+      `, [email, role, department_id || null, token, 1]); // 1 = system/admin user
     }
 
-    // ✅ Dynamically use local or hosted BASE_URL
     const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
     const link = `${baseUrl}/staff-register?token=${token}`;
 
@@ -41,8 +38,8 @@ exports.sendInvite = async (req, res) => {
       secure: false,
       auth: {
         user: 'basseyanikan22@gmail.com',
-        pass: 'eeef bsly lemd irge' // App password
-      }
+        pass: 'eeef bsly lemd irge', // ⚠️ move to .env before production
+      },
     });
 
     await transporter.sendMail({
@@ -53,13 +50,13 @@ exports.sendInvite = async (req, res) => {
     });
 
     res.json({ message: 'Invitation sent!' });
-
   } catch (err) {
     console.error('Invite error:', err);
     res.status(500).json({ message: 'Failed to send invite', error: err.message });
   }
 };
 
+// === 2. Staff Completes Registration ===
 exports.completeRegistration = async (req, res) => {
   const { full_name, username, email, firebase_uid, photo_url, token } = req.body;
 
@@ -69,7 +66,7 @@ exports.completeRegistration = async (req, res) => {
 
   try {
     const invite = await pool.query(
-      'SELECT * FROM staff_invites WHERE token=$1 AND used=false',
+      'SELECT * FROM staff_invites WHERE token = $1 AND used = false',
       [token]
     );
 
@@ -82,23 +79,32 @@ exports.completeRegistration = async (req, res) => {
     await pool.query(`
       INSERT INTO users(firebase_uid, username, name, email, role, department_id, profile_picture)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, [firebase_uid, username, full_name, email, role, department_id, photo_url]);
+    `, [
+      firebase_uid,
+      username,
+      full_name,
+      email,
+      role,
+      department_id,
+      photo_url || null
+    ]);
 
-    await pool.query('UPDATE staff_invites SET used=true WHERE token=$1', [token]);
+    await pool.query('UPDATE staff_invites SET used = true WHERE token = $1', [token]);
 
     res.json({ message: 'Registration completed successfully' });
-
   } catch (err) {
     console.error('Registration error:', err);
     res.status(500).json({ message: 'Error completing registration', error: err.message });
   }
 };
 
-
-// === Get Email by Token ===
+// === 3. Get Email by Token ===
 exports.getInviteInfo = async (req, res) => {
   const { token } = req.query;
-  if (!token) return res.status(400).json({ message: 'Missing token' });
+
+  if (!token) {
+    return res.status(400).json({ message: 'Missing token' });
+  }
 
   try {
     const result = await pool.query(
@@ -106,8 +112,9 @@ exports.getInviteInfo = async (req, res) => {
       [token]
     );
 
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       return res.status(404).json({ message: 'Invalid or expired token' });
+    }
 
     res.json({ email: result.rows[0].email });
   } catch (err) {
@@ -115,8 +122,7 @@ exports.getInviteInfo = async (req, res) => {
   }
 };
 
-
-// === Get Staff Profile by Firebase UID ===
+// === 4. Get Staff Profile by Firebase UID ===
 exports.getStaffProfile = async (req, res) => {
   const { uid } = req.query;
 
@@ -125,37 +131,51 @@ exports.getStaffProfile = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      `SELECT 
-         users.id, users.name, users.firebase_uid, 
-         departments.name AS department_name
-       FROM users
-       LEFT JOIN departments ON users.department_id = departments.id
-       WHERE users.firebase_uid = $1
-       LIMIT 1`,
-      [uid]
-    );
+    const result = await pool.query(`
+      SELECT 
+        users.id, 
+        users.name, 
+        users.username,
+        users.firebase_uid,
+        users.profile_picture,
+        departments.name AS department_name
+      FROM users
+      LEFT JOIN departments ON users.department_id = departments.id
+      WHERE users.firebase_uid = $1
+      LIMIT 1
+    `, [uid]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Staff not found' });
     }
 
-    return res.json(result.rows[0]);
-
-  } catch (error) {
-    console.error('Error fetching staff profile:', error);
-    return res.status(500).json({ error: 'Server error' });
-  }
-};
-// === Get All Staff Members ===
-exports.getAllStaff = async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM users');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching staff:', error);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching staff profile:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
 
+// === 5. Get All Staff Members ===
+exports.getAllStaff = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        id, 
+        name, 
+        username,
+        email, 
+        role, 
+        department_id, 
+        firebase_uid,
+        profile_picture,
+        created_at
+      FROM users
+    `);
 
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching staff:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

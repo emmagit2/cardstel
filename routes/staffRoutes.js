@@ -4,27 +4,36 @@ const path = require('path');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
 
-// Setup multer for uploads
+// ✅ Setup multer for image uploads
 const storage = multer.diskStorage({
-  destination: 'public/uploads/',
-  filename: (req, file, cb) => {
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../public/uploads/images'));  // ✅ store in /public/uploads/images
+  },
+  filename: function (req, file, cb) {
     const uniqueName = Date.now() + '-' + file.originalname;
     cb(null, uniqueName);
   }
 });
+
 const upload = multer({ storage });
 
-// Routes
+// ✅ ROUTES
 router.post('/invite', staffController.sendInvite);
 
-// GET staff profile by Firebase UID
 router.get('/profile', staffController.getStaffProfile);
 router.get('/all', staffController.getAllStaff);
 router.get('/invite-info', staffController.getInviteInfo);
 router.post('/complete-registration', staffController.completeRegistration);
+
+// ✅ Upload profile photo
 router.post('/upload-photo', upload.single('photo'), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-  res.json({ photo_url: `/uploads/${req.file.filename}` });
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  // ✅ Return the public image path
+  const imageUrl = `/uploads/images/${req.file.filename}`;
+  res.json({ photo_url: imageUrl });
 });
 
 module.exports = router;

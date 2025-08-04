@@ -1,466 +1,279 @@
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Dashboard</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chaty Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
+    :root {
+      --primary: #075e54;
+      --secondary: #25d366;
+      --chat-bg: #ece5dd;
+      --sidebar-bg: #ffffff;
+      --msg-recv: #ffffff;
+      --msg-sent: #dcf8c6;
+      --text-color: #303030;
+      --muted-text: #888;
+      --modal-bg: rgba(0,0,0,0.5);
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--chat-bg); color:var(--text-color); }
+    #chatContainer { display:flex; height:100vh; overflow:hidden; }
+
+    /* Sidebar */
+    #sidebar { width:300px; background:var(--sidebar-bg); border-right:1px solid #ddd; display:flex; flex-direction:column; }
+    .header { padding:1rem; background:var(--primary); color:#fff; display:flex; align-items:center; font-weight:600; }
+    .header .logo { width:32px; height:32px; margin-right:8px; }
+    .chat-section { border-bottom:1px solid #eee; }
+    .chat-section-title { padding:0.75rem 1rem; font-weight:600; background:#f0f2f5; display:flex; justify-content:space-between; cursor:pointer; transition:background 0.3s; }
+    .chat-section-title:hover { background:#e4e6eb; }
+    .chat-list { overflow:hidden; transition:height 0.3s ease; }
+    .chat-item { display:flex; padding:1rem; cursor:pointer; border-bottom:1px solid #f1f1f1; }
+    .chat-item img { width:45px; height:45px; border-radius:50%; margin-right:1rem; }
+    .badge { background:var(--secondary); color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:10px; margin-left:8px; }
+
+    /* Custom scrollbar */
+    #sidebar::-webkit-scrollbar { width:6px; }
+    #sidebar::-webkit-scrollbar-thumb { background:#ccc; border-radius:3px; }
+
+    /* Chat View */
+    #chatView { flex:1; display:flex; flex-direction:column; background:var(--chat-bg); transition:left 0.3s ease; position:relative; }
+    #chatHeader { padding:1rem; background:var(--primary); color:#fff; display:flex; align-items:center; gap:1rem; position:relative; }
+    #chatHeader .back-btn { display:none; font-size:1.2rem; cursor:pointer; }
+    #chatHeader .chat-logo { width:40px; height:40px; border-radius:50%; }
+    #chatHeader .controls { margin-left:auto; display:flex; gap:16px; }
+    #chatHeader .controls i { cursor:pointer; font-size:1.25rem; }
+
+    /* Messages area */
+    #messages { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:0.7rem; }
+    .message { max-width:70%; padding:0.7rem 1rem; border-radius:1rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); animation:slideIn 0.3s ease; position:relative; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0);} }
+    .recv { background:var(--msg-recv); align-self:flex-start; border-bottom-left-radius:0; }
+    .sent { background:var(--msg-sent); align-self:flex-end; border-bottom-right-radius:0; }
+
+    .time { font-size:0.75rem; color:var(--muted-text); margin-top:4px; text-align:right;}
+    .seen-status { position:absolute; bottom:4px; right:8px; font-size:0.75rem; color:#4fc3f7;}
+
+    /* Input form */
+    #chatForm { display:flex; padding:0.75rem 1rem; align-items:center; background:#fff; border-top:1px solid #ccc; gap:0.5rem; }
+    #chatForm i.fa-microphone { font-size:1.4rem; color:var(--primary); cursor:pointer; }
+    #chatInput { flex:1; padding:0.6rem 1rem; border:1px solid #ccc; border-radius:20px; }
+    #sendBtn { background:var(--secondary); color:#fff; border:none; width:42px; height:42px; border-radius:50%; font-size:1.2rem; cursor:pointer; }
+
+    /* Search Modal */
+    #searchModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--modal-bg); align-items:center; justify-content:center; }
+    #searchModal .modal-content { background:#fff; padding:1.5rem; border-radius:8px; width:90%; max-width:360px; display:flex; flex-direction:column; gap:1rem; }
+    #searchModal input { padding:0.6rem 1rem; border:1px solid #ccc; border-radius:8px; width:100%; }
+    #searchModal button { align-self:flex-end; padding:0.5rem 1rem; background:var(--secondary); border:none; color:#fff; border-radius:6px; }
+
+    @media(max-width:768px) {
+      #chatContainer { flex-direction:column; }
+      #sidebar { width:100%; }
+      #chatView { position:absolute; width:100%; height:100%; top:0; left:100%; z-index:5; }
+      #chatView.active { left:0; }
+      #chatHeader .back-btn { display:inline; }
     }
 
-  #topNav {
-  width: 80%;
-  margin: 0 auto;
-  height: 56px;
-  background-color: transparent; /* no background */
-  border-bottom: 1px solid #ddd; /* subtle bottom border */
-  color: #1e293b; /* dark text color */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
-  position: fixed;
-  top: 0;
-  left: 0;  /* needed to center with margin auto */
-  right: 0;
-  z-index: 1000;
-  border-radius: 0 0 3px 3px; /* optional: rounded bottom corners */
-  backdrop-filter: blur(8px); /* optional: nice subtle blur if transparent */
-  -webkit-backdrop-filter: blur(8px);
-}
-
-
-    #topNav .welcome-text {
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-
-    #profileDropdown {
-      color: #f1f5f9;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      user-select: none;
-      position: relative;
-    }
-
-    #profileDropdown img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    #profileDropdown .caret {
-      border-top: 5px solid #f1f5f9;
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      display: inline-block;
-      margin-left: 0.2rem;
-    }
-
-    #notificationBell {
-      position: relative;
-      font-size: 1.3rem;
-      margin-right: 1rem;
-      cursor: pointer;
-      color: #f1f5f9;
-    }
-
-    .notif-badge {
-      background-color: #ef4444;
-      color: white;
-      border-radius: 50%;
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      font-weight: 700;
-      position: absolute;
-      top: -6px;
-      right: -8px;
-      user-select: none;
-    }
-
-
-    .section {
-      margin-bottom: 2rem;
-    }
-
-    .list-group-item {
-      background: transparent;
-      border: none;
-      color: #cbd5e1;
-      padding-left: 0;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background-color 0.2s ease;
-      border-radius: 6px;
-    }
-
-    .list-group-item:hover {
-      background-color: #374151;
-    }
-
-    .list-group-item.active {
-      background-color: #2563eb;
-      color: white;
-    }
-
-    #mainContent {
-     margin-left: 150px;
-      margin-top: 56px;
-      padding: 1.5rem;
-      height: calc(100vh - 56px);
-      background: #f1f5f9;
-      display: flex;
-      gap: 1rem;
-      overflow: hidden;
-    }
-
-    #staffList {
-      width: 280px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #staffList h4 {
-      padding: 1rem;
-      border-bottom: 1px solid #ddd;
-      margin: 0;
-      font-weight: 600;
-    }
-
-    #staffList ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      flex-grow: 1;
-      overflow-y: auto;
-    }
-
-    #staffList li {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      transition: background-color 0.2s;
-    }
-
-    #staffList li:hover,
-    #staffList li.active {
-      background-color: #2563eb;
-      color: white;
-    }
-
-    #staffList li img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-#chatUI {
-  width: 100%;
-  max-width: 720px; /* make it more compact */
-  margin: 0 auto;
-  background: white;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  height: 100%;
-}
-
-#chatHeader {
-  padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  font-weight: 600;
-  background-color: #2563eb;
-  color: white;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
-#chatMessages {
-  flex-grow: 1;
-  padding: 1rem;
-  overflow-y: auto;
-  background-color: #f9fafb;
-}
-
-/* Message styling */
-.chat-message {
-  margin-bottom: 1rem;
-  max-width: 800px;
-  padding: 0.6rem 1rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
-  line-height: 1.;
-}
-
-.chat-message.admin {
-  background-color: #2563eb;
-  color: white;
-  margin-left: auto;
-}
-
-/* Chat Form Layout */
-#chatForm {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-top: 1px solid #e2e8f0;
-  padding: 0.2rem 1rem;
-  background-color: #ffffff;
-}
-
-/* Icons to the left of input */
-#chatForm .icon-left {
-  font-size: 1.2rem;
-  color: #64748b;
-  cursor: pointer;
-  margin-right: 0.4rem;
-}
-
-/* Input with mic icon inside */
-#chatInputWrapper {
-  flex-grow: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* Chat message container flexbox for alignment */
-  .chat-message {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-  }
-
-  /* Sent messages: align to left */
-  .chat-message.sent {
-    flex-direction: row;
-    justify-content: flex-end;
-    width: 40%;
-    margin-left: 50%;
-    margin-top: 5%;
+     /* Add this in your main CSS or inside a <style> tag */
+  .chat-input-wrapper {
     position: relative;
-    background-color: #d3d9ee;
-  }
-  .chat-message.sent img {
-    margin-right: 10px;
-    margin-left: 0;
-    position:absolute;
-    top: -13%;
+    flex-grow: 1;
   }
 
-  /* Received messages: align to right */
-  .chat-message.received {
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-  }
-  .chat-message.received img {
-    order: 1;
-    margin-left: 10px;
-    margin-right: 0;
+  .chat-input-wrapper input {
+    padding-right: 40px; /* make space for mic icon */
   }
 
-  /* Message content max width & wrapping */
-  .chat-message .fw-semibold,
-  .chat-message .bg-light {
-    max-width: 300px;
-    word-wrap: break-word;
+  .chat-input-wrapper .mic-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
   }
 
-  /* Optional colors */
-  .chat-message.sent .bg-light {
-    background-color: #e6f7ff;
-  }
-  .chat-message.received .bg-light {
-    background-color: #d9fdd3;
+  #chatForm {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
   }
 
-#chatInput {
-  width: 100%;
-  border: none;
-  padding: 0.6rem 2.5rem 0.6rem 1rem;
-  border-radius: 25px;
-  background-color: #f1f5f9;
-  font-size: 0.95rem;
-  outline: none;
+  #chatForm input {
+    border-radius: 25px;
+    padding-left: 15px;
+    border: 1px solid #ced4da;
+  }
+
+  #chatForm .fa-paperclip {
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  #chatForm .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-header {
+  background-color: #f5f7fa;
+  height: 60px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-#chatInput:focus {
-  background-color: #e2e8f0;
+.chat-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
-/* Mic icon inside input */
-#chatInputWrapper i.fa-microphone {
-  position: absolute;
-  right: 12px;
-  color: #64748b;
-  font-size: 1.1rem;
+.name {
+  font-size: 16px;
+  color: #333;
+}
+
+.controls i {
+  font-size: 18px;
+  color: #555;
   cursor: pointer;
 }
 
-/* Send button */
-#chatForm button {
-  background-color: #2563eb;
-  border: none;
-  border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.1rem;
-  transition: background-color 0.2s;
+.back-btn {
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
 }
-
-#chatForm button:hover {
-  background-color: #1e40af;
+.rotate-icon {
+  transition: transform 0.3s ease;
 }
-
+.rotate-icon.collapsed {
+  transform: rotate(-90deg);
+}
 
   </style>
-
 </head>
 <body>
-  <!-- Top Navbar -->
-<nav id="topNav" class=" border-bottom bg-white w-60 d-flex justify-content-center">
-  <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 80%; padding: 0.75rem 1rem;">
-    <div class="welcome-text fw-semibold fs-6 text-dark">Welcome, <span id="adminName">Admin</span></div>
-
-    <div class="d-flex align-items-center gap-3">
-      <!-- Notification Bell -->
-      <div id="notificationBell" class="position-relative">
-        <i class="fa-solid fa-bell fs-5 text-dark"></i>
-        <span class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">3</span>
+  <div id="chatContainer">
+    <div id="sidebar">
+      <div class="header">
+        <img class="logo" src="https://via.placeholder.com/40.png?text=Logo" alt="Logo"/>
+        CompanyName
       </div>
-
-      <!-- Profile Dropdown -->
-      <div class="dropdown">
-        <div id="profileDropdown" class="d-flex align-items-center gap-2 text-dark" data-bs-toggle="dropdown" style="cursor: pointer;">
-          <img src="https://i.pravatar.cc/36" alt="Profile Picture" class="rounded-circle border" width="36" height="36">
-          <span class="fw-semibold">Admin</span>
-          <i class="fa-solid fa-caret-down text-dark"></i> <!-- black dropdown arrow -->
-        </div>
-
-        <!-- Dropdown Menu -->
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2">
-          <li>
-            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
-              <i class="fa-solid fa-user text-primary"></i> Profile
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
-              <i class="fa-solid fa-right-from-bracket text-danger"></i> Logout
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+<!-- Department Group Chats Section -->
+<div class="chat-section">
+  <div class="chat-section-title d-flex justify-content-between align-items-center"
+       data-bs-toggle="collapse"
+       data-bs-target="#departmentCollapse"
+       role="button"
+       aria-expanded="true"
+       aria-controls="departmentCollapse">
+    <span>Department Group Chats</span>
+    <i id="chevronDepartment" class="fas fa-chevron-down"></i>
   </div>
-</nav>
+  <div class="chat-list collapse show" id="departmentCollapse">
+    <ul class="list-unstyled" style="max-height: 160px; overflow-y: auto;">
+      <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+        <i class="fa fa-angle-right text-muted"></i>
+        <span class="text-dark fw-semibold">IT Department</span>
+      </li>
+      <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+        <i class="fa fa-angle-right text-muted"></i>
+        <span class="text-dark fw-semibold">HR</span>
+      </li>
+      <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+        <i class="fa fa-angle-right text-muted"></i>
+        <span class="text-dark fw-semibold">Marketing</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Footer Section with Profile and Logout -->
 
 
+</div>
 
-  <!-- Main Content -->
-  <main id="mainContent">
-  <!-- Staff Sidebar Card -->
-<div class="card shadow-sm rounded-4" style="width: 100%; max-width: 320px; height: 100%; background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); overflow-y: auto;">
-  <div class="card-body p-3">
-
-    <!-- Departments (Collapsible) -->
-    <div class="mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#departmentCollapse" aria-expanded="true">
-        <h6 class="text-uppercase fw-bold text-dark mb-0">Departments</h6>
-        <i class="fa fa-chevron-down text-muted small"></i>
-      </div>
-      <ul id="departmentCollapse" class="collapse show list-unstyled" style="max-height: 160px; overflow-y: auto;">
-        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
-          <i class="fa fa-angle-right text-muted"></i>
-          <span class="text-dark fw-semibold">IT Department</span>
-        </li>
-        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
-          <i class="fa fa-angle-right text-muted"></i>
-          <span class="text-dark fw-semibold">HR</span>
-        </li>
-        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
-          <i class="fa fa-angle-right text-muted"></i>
-          <span class="text-dark fw-semibold">Marketing</span>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Staff (Collapsible) -->
-    <div>
-      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#staffCollapse" aria-expanded="true">
-        <h6 class="text-uppercase fw-bold text-dark mb-0">Staff</h6>
-        <i class="fa fa-chevron-down text-muted small"></i>
-      </div>
-      <div id="staffCollapse" class="collapse show">
-        <input type="text" id="staffSearch" class="form-control form-control-sm mb-3" placeholder="Search staff...">
-        <ul class="list-unstyled" id="staffListItems" style="max-height: 300px; overflow-y: auto;">
-          <!-- Staff dynamically added via JS -->
-        </ul>
-      </div>
-    </div>
-
+<!-- Normal Chats Section -->
+<div class="chat-section">
+  <div class="chat-section-title d-flex justify-content-between align-items-center"
+       data-bs-toggle="collapse"
+       data-bs-target="#staffCollapse"
+       role="button"
+       aria-expanded="true"
+       aria-controls="staffCollapse">
+    <span>Normal Chats</span>
+    <i id="chevronStaff" class="fas fa-chevron-down"></i>
+  </div>
+  <div class="chat-list collapse show" id="staffCollapse">
+    <input type="text" id="staffSearch" class="form-control form-control-sm mb-3" placeholder="Search staff...">
+    <ul class="list-unstyled" id="staffListItems" style="max-height: 300px; overflow-y: auto;">
+      <!-- Dynamically added staff -->
+    </ul>
   </div>
 </div>
 
+<div class="sidebar-footer mt-auto d-flex align-items-center justify-content-between p-3 border-top">
+  <div class="d-flex align-items-center gap-2">
+    <img src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle" width="32" height="32">
+    <div class="welcome-text fw-semibold fs-6 text-dark"> <span id="adminName">Admin</span></div>
+  </div>
+  <button id="logoutBtn" class="btn btn-sm btn-outline-danger">Logout</button>
+</div>
+    </div>
 
+    <div id="chatView">
+      <div id="chatHeader">
+        <i class="fas fa-arrow-left back-btn" id="goBack"></i>
+        <img id="chatImg" class="chat-logo" src="https://i.pravatar.cc/45?img=30"/>
+        <div class="name" id="chatName">IT Dept</div>
+        <div class="controls">
+          <i class="fas fa-search" title="Search messages" onclick="openSearchModal()"></i>
+          <i class="fas fa-video" title="Video call"></i>
+          <i class="fas fa-phone" title="Voice call"></i>
+        </div>
+      </div>
 
-    <div id="chatUI">
-      <div id="chatHeader">Chat with</div>
-      <div id="chatMessages"></div>
-      <!-- <form id="chatForm">
-        <input type="text" id="chatInput" placeholder="Type a message..." />
-        <button type="submit" class="btn btn-primary">Send</button>
-      </form> -->
+      <div id="messages">
+        <div class="message recv">Hello team!<div class="time">08:55</div></div>
+        <div class="message sent">Systems are up.<div class="time">09:00</div><div class="seen-status"><i class="fa fa-check-double"></i></div></div>
+      </div>
 
-      <form id="chatForm">
-  <!-- Left icons -->
-  <i class="fa fa-paperclip icon-left"></i>
-  <i class="fa fa-smile icon-left"></i>
+<form id="chatForm" style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f9f9f9; border-radius: 10px; border: 1px solid #ddd;">
+  
+  <!-- Attach Icon -->
+  <i class="fa fa-paperclip" title="Attach file" style="color: #aaa; font-size: 18px; cursor: pointer;"></i>
 
-  <!-- Input wrapper with mic inside -->
-  <div id="chatInputWrapper">
-    <input type="text" id="chatInput" placeholder="Type a message..." />
-  <button type="button" id="recordBtn"><i class="fa fa-microphone" style="color: white;"></i></button>
+  <!-- Input with mic inside -->
+  <div style="position: relative; flex-grow: 1;">
+    <input
+      type="text"
+      id="chatInput"
+      placeholder="Type a message..."
+      autocomplete="off"
+      style="width: 100%; padding: 10px 36px 10px 12px; border-radius: 20px; border: 1px solid #ccc; outline: none; font-size: 14px;"
+    />
+    <button type="button" id="recordBtn" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+      <i class="fa fa-microphone" style="color: #555;"></i>
+    </button>
   </div>
 
-  <!-- Send button -->
-  <button type="submit"><i class="fa fa-paper-plane"></i></button>
+  <!-- Send Button -->
+  <button type="submit" style="background-color: #007bff; border: none; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+    <i class="fa fa-paper-plane"></i>
+  </button>
+
 </form>
 
     </div>
+  </div>
 
 
-    <!-- Voice Preview Modal -->
+      <!-- Voice Preview Modal -->
 <div class="modal fade" id="voicePreviewModal" tabindex="-1" aria-labelledby="voicePreviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content p-3">
@@ -478,14 +291,53 @@
     </div>
   </div>
 </div>
+  <!-- Search Modal -->
+  <div id="searchModal">
+    <div class="modal-content">
+      <h3>Search Messages</h3>
+      <input type="text" id="modalSearchInput" placeholder="Type to search..." />
+      <button onclick="performSearch()">Search</button>
+    </div>
+  </div>
 
-  </main>
-
-  <!-- Scripts -->
+ 
+    <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js" integrity="sha512-AI5A3zIoeRSEEX9z3Vyir8NqSMC1pY7r5h2cE+9J6FLsoEmSSGLFaqMQw8SWvoONXogkfFrkQiJfLeHLz3+HOg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+
+<script>
+  document.getElementById("toggleSidebar").addEventListener("click", function () {
+    const sidebar = document.querySelector(".card.shadow-sm.rounded-4");
+    sidebar.classList.toggle("d-none");
+  });
+</script>
+
+
 <script type="module">
+const departmentCollapse = document.getElementById('departmentCollapse');
+const staffCollapse = document.getElementById('staffCollapse');
+
+departmentCollapse.addEventListener('shown.bs.collapse', () => {
+  document.getElementById('chevronDepartment').classList.remove('fa-chevron-right');
+  document.getElementById('chevronDepartment').classList.add('fa-chevron-down');
+});
+
+departmentCollapse.addEventListener('hidden.bs.collapse', () => {
+  document.getElementById('chevronDepartment').classList.remove('fa-chevron-down');
+  document.getElementById('chevronDepartment').classList.add('fa-chevron-right');
+});
+
+staffCollapse.addEventListener('shown.bs.collapse', () => {
+  document.getElementById('chevronStaff').classList.remove('fa-chevron-right');
+  document.getElementById('chevronStaff').classList.add('fa-chevron-down');
+});
+
+staffCollapse.addEventListener('hidden.bs.collapse', () => {
+  document.getElementById('chevronStaff').classList.remove('fa-chevron-down');
+  document.getElementById('chevronStaff').classList.add('fa-chevron-right');
+});
+
 const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"  // Change port to your local backend port
   : "https://cardstel.onrender.com";
@@ -538,20 +390,19 @@ const BASE_URL = window.location.hostname === "localhost"
     // Staff list loader and first chat setup
 let firstStaffId = null;
 let firstStaffName = null;
-
 try {
   const staffList = await fetch('/api/staff/all').then(res => res.json());
 
-  // === Add this mapping block here ===
+  // === Map Firebase UID to numeric staff ID ===
   const uidToIdMap = {};
   staffList.forEach(staff => {
     uidToIdMap[staff.firebase_uid] = staff.id;
   });
-   currentUserId = uidToIdMap[uid];
+
+  currentUserId = uidToIdMap[uid];
   console.log("✅ Firebase UID:", uid);
   console.log("✅ Mapped numeric staff ID:", currentUserId);
-  // === Mapping block ends ===
-
+  // === End mapping ===
 
   const staffListContainer = document.getElementById('staffListItems');
 
@@ -574,24 +425,33 @@ try {
         const bufferData = staff.profile_picture.data;
         const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
         profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
-      } catch {}
+      } catch (imgErr) {
+        console.error("Error decoding profile image:", imgErr);
+      }
     }
 
     let badge = '';
-    if (staff.role === 'super_admin') badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
-    else if (staff.role === 'admin') badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
-
-    li.innerHTML = `
-      <div class="d-flex align-items-center gap-2 position-relative w-100">
-        <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
-        <div class="text-dark fw-semibold d-flex align-items-center">
-          ${staff.name}
-          ${badge}
-        </div>
-        <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
-      </div>
-<div class="connection-indicator text-warning"><i class="fa-solid fa-circle fa-xs"></i></div>
-    `;
+    if (staff.role === 'super_admin') {
+      badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
+    } else if (staff.role === 'admin') {
+      badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
+    }
+li.className = "staff-item"; // optional
+li.innerHTML = `
+  <div class="d-flex align-items-center gap-2 position-relative w-100">
+    <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+    <div class="text-dark fw-semibold d-flex align-items-center">
+      ${staff.name}
+      ${badge}
+    </div>
+    <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
+  </div>
+  <div class="connection-indicator text-warning"><i class="fa-solid fa-circle fa-xs"></i></div>
+`;
+// Add this line to open chat when the staff item is clicked
+li.addEventListener('click', () => {
+  openChat(staff.name, profileImg);
+});
 
     if (index === 0) {
       li.classList.add('active');
@@ -604,7 +464,11 @@ try {
       li.classList.add('active');
 
       receiverId = li.dataset.id;
-      document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+
+      // ✅ Update only chat header name and image
+      document.getElementById('chatName').textContent = staff.name;
+      document.getElementById('chatImg').src = staff.imgUrl || "https://i.pravatar.cc/45";
+
       loadChatHistory(receiverId);
 
       unreadCounters[receiverId] = 0;
@@ -622,12 +486,81 @@ try {
 
   if (firstStaffId) {
     receiverId = firstStaffId;
-    document.getElementById('chatHeader').textContent = `Chat with ${firstStaffName}`;
+
+    try {
+      const firstStaff = sortedStaff.find(s => s.id == firstStaffId);
+      if (firstStaff) {
+        document.getElementById('chatName').textContent = firstStaff.name;
+
+        let firstImg = `https://i.pravatar.cc/45?u=${firstStaff.firebase_uid}`;
+        if (firstStaff.profile_picture?.data) {
+          try {
+            const bufferData = firstStaff.profile_picture.data;
+            const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
+            firstImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
+          } catch (imgDecodeErr) {
+            console.error("Error decoding profile picture path:", imgDecodeErr);
+          }
+        }
+
+        document.getElementById('chatImg').src = firstImg;
+      }
+
+      loadChatHistory(receiverId);
+    } catch (err) {
+      console.error("Error loading first staff chat:", err);
+    }
+  }
+
+} catch (err) {
+  console.error("❌ Failed to fetch staff list or initialize chat:", err);
+}
+
+
+
+// staffListContainer.appendChild(li);
+function openChat(name, imgUrl) {
+  // Show chat section
+  document.getElementById('chatView').classList.add('active');
+
+  // Optional: Hide staff list if you're switching views
+
+ 
+  // Update header
+  document.getElementById('chatName').textContent = name;
+  document.getElementById('chatImg').src = imgUrl;
+
+  // Set receiverId (you must have this available from the click context or staff object)
+  if (receiverId) {
     loadChatHistory(receiverId);
   }
-} catch (err) {
-  console.error("Failed to fetch staff list:", err);
 }
+
+const chatView = document.getElementById('chatView');
+const backButton = document.getElementById('goBack');
+
+// Handle back button click
+backButton.addEventListener('click', goBack);
+
+// Handle go back (show staff list, hide chat view)
+function goBack() {
+  chatView.classList.remove("active");
+}
+ let startX = 0;
+
+chatView.addEventListener('touchstart', function (e) {
+  startX = e.touches[0].clientX;
+});
+
+chatView.addEventListener('touchend', function (e) {
+  let endX = e.changedTouches[0].clientX;
+  if (startX < 50 && endX - startX > 100) {
+    goBack(); // Go back if dragged right from left edge
+  }
+});
+
+
+
 
     // Connect to Socket.IO
     const socket = io(BASE_URL, { auth: { token } });
@@ -688,7 +621,7 @@ async function syncOfflineMessages() {
 
 
   socket.on('chat message', (data) => {
-  const chatMessages = document.getElementById('chatMessages');
+  const chatMessages = document.getElementById('messages');
 
   const isCurrentChat =
     (data.sender_id == receiverId || data.receiver_id == receiverId) ||
@@ -756,7 +689,7 @@ const isSelf = Number(data.sender_id) === currentUserId;
         department_id: null
       };
 
-      const isDepartment = !!document.querySelector(`#departmentCollapse li[data-dept-id='${receiverId}']`);
+      const isDepartment = !document.querySelector(`#departmentCollapse li[data-dept-id='${receiverId}']`);
       if (isDepartment) {
         emitData.type = 'department';
         emitData.department_id = receiverId;
@@ -766,13 +699,11 @@ const isSelf = Number(data.sender_id) === currentUserId;
 
       socket.emit('chat message', emitData);
 
-      const chatMessages = document.getElementById('chatMessages');
+      const chatMessages = document.getElementById('messages');
       const selfMsg = document.createElement('div');
       selfMsg.className = 'chat-message sent';
       selfMsg.innerHTML = `
-        <img src="https://i.pravatar.cc/36?u=${uid}" alt="You" class="rounded-circle me-2" width="36" height="36" />
         <div>
-          <div class="fw-semibold">You</div>
           <div class="bg-light border rounded p-2">${msg}</div>
           <small class="text-muted">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</small>
         </div>
@@ -874,7 +805,7 @@ confirmSendBtn.addEventListener('click', async () => {
   if (!recordedBlob) return;
 
   const tempUrl = URL.createObjectURL(recordedBlob);
-  const messageContainer = document.getElementById('chatMessages');
+  const messageContainer = document.getElementById('messages');
 
   // === 1. Show temp voice message
   const tempMsgDiv = document.createElement('div');
@@ -1003,7 +934,7 @@ async function loadDepartmentChat(departmentId) {
 }
 
    
-  async function loadChatHistory(withUserId) {
+ async function loadChatHistory(withUserId) {
   if (!uid) {
     console.warn('⚠️ loadChatHistory called but uid is null or undefined');
     return;
@@ -1013,15 +944,11 @@ async function loadDepartmentChat(departmentId) {
     const response = await fetch(`/api/messages?type=private&user_id=${withUserId}`);
     const messages = await response.json();
 
-    const chatMessages = document.getElementById('chatMessages');
+    const chatMessages = document.getElementById('messages'); // Use "messages" as you wanted
     chatMessages.innerHTML = '';
 
     for (const msg of messages) {
       const isSelf = Number(msg.sender_id) === currentUserId;
-
-      const profileImg = msg.sender_profile
-        ? `data:image/jpeg;base64,${msg.sender_profile}`
-        : `https://i.pravatar.cc/36?u=${msg.sender_id}`;
 
       const messageContent = msg.message_type === 'voice' && msg.file_url
         ? `<audio controls style="width: 200px;">
@@ -1035,14 +962,11 @@ async function loadDepartmentChat(departmentId) {
         : '';
 
       const messageDiv = document.createElement('div');
-      messageDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+      messageDiv.className = `message ${isSelf ? 'sent' : 'recv'}`;
       messageDiv.innerHTML = `
-        <img src="${profileImg}" alt="${isSelf ? 'You' : 'User'}" class="rounded-circle me-2" width="36" height="36" />
-        <div>
-          <div class="fw-semibold">${isSelf ? 'You' : msg.sender_name || 'Unknown'}</div>
-          <div class="bg-light border rounded p-2">${messageContent}</div>
-          <small class="text-muted">${sentTime}</small>
-        </div>
+        ${messageContent}
+        <div class="time">${sentTime}</div>
+        ${isSelf ? '<div class="seen-status"><i class="fa fa-check-double"></i></div>' : ''}
       `;
 
       chatMessages.appendChild(messageDiv);
@@ -1053,6 +977,7 @@ async function loadDepartmentChat(departmentId) {
     console.error('❌ Failed to load chat history:', err);
   }
 }
+
 
   });
 </script>

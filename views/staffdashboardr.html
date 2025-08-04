@@ -1,0 +1,872 @@
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+  #topNav {
+  width: 80%;
+  margin: 0 auto;
+  height: 56px;
+  background-color: transparent; /* no background */
+  border-bottom: 1px solid #ddd; /* subtle bottom border */
+  color: #1e293b; /* dark text color */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;  /* needed to center with margin auto */
+  right: 0;
+  z-index: 1000;
+  border-radius: 0 0 3px 3px; /* optional: rounded bottom corners */
+  backdrop-filter: blur(8px); /* optional: nice subtle blur if transparent */
+  -webkit-backdrop-filter: blur(8px);
+}
+
+
+    #topNav .welcome-text {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    #profileDropdown {
+      color: #f1f5f9;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      position: relative;
+    }
+
+    #profileDropdown img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    #profileDropdown .caret {
+      border-top: 5px solid #f1f5f9;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      display: inline-block;
+      margin-left: 0.2rem;
+    }
+
+    #notificationBell {
+      position: relative;
+      font-size: 1.3rem;
+      margin-right: 1rem;
+      cursor: pointer;
+      color: #f1f5f9;
+    }
+
+    .notif-badge {
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      font-weight: 700;
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      user-select: none;
+    }
+
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .list-group-item {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding-left: 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s ease;
+      border-radius: 6px;
+    }
+
+    .list-group-item:hover {
+      background-color: #374151;
+    }
+
+    .list-group-item.active {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    #mainContent {
+     margin-left: 150px;
+      margin-top: 56px;
+      padding: 1.5rem;
+      height: calc(100vh - 56px);
+      background: #f1f5f9;
+      display: flex;
+      gap: 1rem;
+      overflow: hidden;
+    }
+
+    #staffList {
+      width: 280px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #staffList h4 {
+      padding: 1rem;
+      border-bottom: 1px solid #ddd;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    #staffList ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #staffList li {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: background-color 0.2s;
+    }
+
+    #staffList li:hover,
+    #staffList li.active {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    #staffList li img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+#chatUI {
+  width: 100%;
+  max-width: 720px; /* make it more compact */
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: 100%;
+}
+
+#chatHeader {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 600;
+  background-color: #2563eb;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+#chatMessages {
+  flex-grow: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f9fafb;
+}
+
+/* Message styling */
+.chat-message {
+  margin-bottom: 1rem;
+  max-width: 800px;
+  padding: 0.6rem 1rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  line-height: 1.;
+}
+
+.chat-message.admin {
+  background-color: #2563eb;
+  color: white;
+  margin-left: auto;
+}
+
+/* Chat Form Layout */
+#chatForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.2rem 1rem;
+  background-color: #ffffff;
+}
+
+/* Icons to the left of input */
+#chatForm .icon-left {
+  font-size: 1.2rem;
+  color: #64748b;
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
+
+/* Input with mic icon inside */
+#chatInputWrapper {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Chat message container flexbox for alignment */
+  .chat-message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  /* Sent messages: align to left */
+  .chat-message.sent {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 40%;
+    margin-left: 50%;
+    margin-top: 5%;
+    position: relative;
+    background-color: #d3d9ee;
+  }
+  .chat-message.sent img {
+    margin-right: 10px;
+    margin-left: 0;
+    position:absolute;
+    top: -13%;
+  }
+
+  /* Received messages: align to right */
+  .chat-message.received {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .chat-message.received img {
+    order: 1;
+    margin-left: 10px;
+    margin-right: 0;
+  }
+
+  /* Message content max width & wrapping */
+  .chat-message .fw-semibold,
+  .chat-message .bg-light {
+    max-width: 300px;
+    word-wrap: break-word;
+  }
+
+  /* Optional colors */
+  .chat-message.sent .bg-light {
+    background-color: #e6f7ff;
+  }
+  .chat-message.received .bg-light {
+    background-color: #d9fdd3;
+  }
+
+#chatInput {
+  width: 100%;
+  border: none;
+  padding: 0.6rem 2.5rem 0.6rem 1rem;
+  border-radius: 25px;
+  background-color: #f1f5f9;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+#chatInput:focus {
+  background-color: #e2e8f0;
+}
+
+/* Mic icon inside input */
+#chatInputWrapper i.fa-microphone {
+  position: absolute;
+  right: 12px;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* Send button */
+#chatForm button {
+  background-color: #2563eb;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  transition: background-color 0.2s;
+}
+
+#chatForm button:hover {
+  background-color: #1e40af;
+}
+
+/* === Responsive Styles === */
+@media screen and (max-width: 768px) {
+  #mainContent {
+    flex-direction: column;
+    margin-left: 0;
+    padding: 0.5rem;
+    height: auto;
+  }
+
+  #chatUI {
+    width: 100%;
+    max-width: 100%;
+    height: 80vh;
+    margin-top: 1rem;
+  }
+
+  .card.shadow-sm.rounded-4 {
+    width: 100% !important;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    height: auto !important;
+  }
+
+  #chatMessages {
+    max-height: 45vh;
+  }
+
+  #chatInputWrapper {
+    flex-grow: 1;
+  }
+
+  #chatInput {
+    font-size: 0.85rem;
+    padding: 0.5rem 2.2rem 0.5rem 0.75rem;
+  }
+
+  #chatForm button {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+
+  #chatForm .icon-left {
+    font-size: 1rem;
+  }
+
+  #topNav {
+    width: 100%;
+    padding: 0 0.75rem;
+  }
+
+  .welcome-text {
+    font-size: 0.9rem;
+  }
+
+  #profileDropdown span {
+    display: none;
+  }
+}
+
+  </style>
+
+</head>
+<body>
+
+  <!-- Top Navbar -->
+<nav id="topNav" class=" border-bottom bg-white w-60 d-flex justify-content-center">
+  <div class="d-flex justify-content-between align-items-center w-100" style="max-width: 80%; padding: 0.75rem 1rem;">
+    <div class="welcome-text fw-semibold fs-6 text-dark">Welcome, <span id="adminName">Admin</span></div>
+
+    <div class="d-flex align-items-center gap-3">
+      <!-- Notification Bell -->
+      <div id="notificationBell" class="position-relative">
+        <i class="fa-solid fa-bell fs-5 text-dark"></i>
+        <span class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">3</span>
+      </div>
+
+      <!-- Profile Dropdown -->
+      <div class="dropdown">
+        <div id="profileDropdown" class="d-flex align-items-center gap-2 text-dark" data-bs-toggle="dropdown" style="cursor: pointer;">
+          <img src="https://i.pravatar.cc/36" alt="Profile Picture" class="rounded-circle border" width="36" height="36">
+          <span class="fw-semibold">Admin</span>
+          <i class="fa-solid fa-caret-down text-dark"></i> <!-- black dropdown arrow -->
+        </div>
+
+        <!-- Dropdown Menu -->
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 mt-2">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-user text-primary"></i> Profile
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+              <i class="fa-solid fa-right-from-bracket text-danger"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+
+  <!-- Main Content -->
+  <main id="mainContent">
+    
+ 
+  <!-- Staff Sidebar Card -->
+<div class="card shadow-sm rounded-4" style="width: 100%; max-width: 320px; height: 100%; background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); overflow-y: auto;">
+  <div class="card-body p-3">
+
+    <!-- Departments (Collapsible) -->
+    <div class="mb-4">
+      <button id="toggleSidebar" class="btn btn-outline-secondary d-md-none mb-2">
+  Toggle Sidebar
+</button> 
+      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#departmentCollapse" aria-expanded="true">
+        <h6 class="text-uppercase fw-bold text-dark mb-0">Departments</h6>
+        <i class="fa fa-chevron-down text-muted small"></i>
+      </div>
+      <ul id="departmentCollapse" class="collapse show list-unstyled" style="max-height: 160px; overflow-y: auto;">
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">IT Department</span>
+        </li>
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">HR</span>
+        </li>
+        <li class="p-2 mb-2 bg-white rounded-3 shadow-sm border d-flex align-items-center gap-2" style="cursor: pointer;">
+          <i class="fa fa-angle-right text-muted"></i>
+          <span class="text-dark fw-semibold">Marketing</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Staff (Collapsible) -->
+    <div>
+      <div class="d-flex justify-content-between align-items-center mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#staffCollapse" aria-expanded="true">
+        <h6 class="text-uppercase fw-bold text-dark mb-0">Staff</h6>
+        <i class="fa fa-chevron-down text-muted small"></i>
+      </div>
+      <div id="staffCollapse" class="collapse show">
+        <input type="text" id="staffSearch" class="form-control form-control-sm mb-3" placeholder="Search staff...">
+        <ul class="list-unstyled" id="staffListItems" style="max-height: 300px; overflow-y: auto;">
+          <!-- Staff dynamically added via JS -->
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+    <div id="chatUI">
+      <div id="chatHeader">Chat with</div>
+      <div id="chatMessages"></div>
+      <!-- <form id="chatForm">
+        <input type="text" id="chatInput" placeholder="Type a message..." />
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form> -->
+
+      <form id="chatForm">
+  <!-- Left icons -->
+  <i class="fa fa-paperclip icon-left"></i>
+  <i class="fa fa-smile icon-left"></i>
+
+  <!-- Input wrapper with mic inside -->
+  <div id="chatInputWrapper">
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+  <button type="button" id="recordBtn"><i class="fa fa-microphone" style="color: white;"></i></button>
+  </div>
+
+  <!-- Send button -->
+  <button type="submit"><i class="fa fa-paper-plane"></i></button>
+</form>
+
+    </div>
+
+
+    <!-- Voice Preview Modal -->
+<div class="modal fade" id="voicePreviewModal" tabindex="-1" aria-labelledby="voicePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Send Voice Message</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <audio id="voicePreviewPlayer" controls class="w-100"></audio>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="confirmSendVoiceBtn" type="button" class="btn btn-primary">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js" integrity="sha512-AI5A3zIoeRSEEX9z3Vyir8NqSMC1pY7r5h2cE+9J6FLsoEmSSGLFaqMQw8SWvoONXogkfFrkQiJfLeHLz3+HOg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  document.getElementById("toggleSidebar").addEventListener("click", function () {
+    const sidebar = document.querySelector(".card.shadow-sm.rounded-4");
+    sidebar.classList.toggle("d-none");
+  });
+</script>
+<script type="module">
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"  // Change port to your local backend port
+  : "https://cardstel.onrender.com";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+  authDomain: "chat-app-6776e.firebaseapp.com",
+  projectId: "chat-app-6776e",
+  storageBucket: "chat-app-6776e.appspot.com",
+  messagingSenderId: "136411415099",
+  appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+  measurementId: "G-GVS3VG6Y50"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let uid = null;
+let currentUserId = null;
+let receiverId = null;
+const unreadCounters = {};
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "/login";
+    return;
+  }
+
+  uid = user.uid;
+  const token = await user.getIdToken();
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // Load profile
+      const profileRes = await fetch(`/api/staff/profile?uid=${uid}`);
+      const profile = await profileRes.json();
+      console.log("📥 Loaded profile:", profile);
+
+      document.getElementById('adminName').textContent = profile.name || 'Admin';
+
+      const profileImage = document.querySelector('#profileDropdown img');
+      if (profileImage) {
+        let adminProfileImg = `https://i.pravatar.cc/36?u=${uid}`;
+        if (profile.profile_picture && typeof profile.profile_picture === 'string') {
+          adminProfileImg = profile.profile_picture.startsWith('/uploads')
+            ? profile.profile_picture
+            : `/${profile.profile_picture}`;
+        }
+        profileImage.src = adminProfileImg;
+        console.log("🖼️ Set profile image to:", adminProfileImg);
+      } else {
+        console.warn("⚠️ profileDropdown img not found in DOM.");
+      }
+
+      // Load staff list
+      const staffRes = await fetch('/api/staff/all');
+      const staffList = await staffRes.json();
+      console.log("Staff list:", staffList);
+
+      // Map Firebase UID to numeric staff ID
+      const uidToIdMap = {};
+      staffList.forEach(staff => {
+        uidToIdMap[staff.firebase_uid] = staff.id;
+      });
+      currentUserId = uidToIdMap[uid];
+      console.log("✅ Firebase UID:", uid);
+      console.log("✅ Mapped numeric staff ID:", currentUserId);
+
+      const staffListContainer = document.getElementById('staffListItems');
+      staffListContainer.innerHTML = '';
+
+      const sortedStaff = staffList
+        .filter(staff => staff.firebase_uid !== uid)
+        .sort((a, b) => {
+          const priority = { super_admin: 0, admin: 1, user: 2 };
+          return (priority[a.role] ?? 3) - (priority[b.role] ?? 3);
+        });
+
+      let firstStaffId = null;
+      let firstStaffName = null;
+
+      sortedStaff.forEach((staff, index) => {
+        const li = document.createElement('li');
+        li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
+        li.style.cursor = 'pointer';
+        li.dataset.id = staff.id;
+
+        // Use profile_picture directly if exists, else fallback to pravatar
+        let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
+        if (staff.profile_picture && typeof staff.profile_picture === 'string') {
+          profileImg = staff.profile_picture.startsWith('/uploads')
+            ? staff.profile_picture
+            : `/${staff.profile_picture}`;
+        }
+
+        let badge = '';
+        if (staff.role === 'super_admin') {
+          badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
+        } else if (staff.role === 'admin') {
+          badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
+        }
+
+        li.innerHTML = `
+          <div class="d-flex align-items-center gap-2 position-relative w-100">
+            <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+            <div class="text-dark fw-semibold d-flex align-items-center">
+              ${staff.name}
+              ${badge}
+            </div>
+            <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
+          </div>
+          <div class="connection-indicator text-warning">
+            <i class="fa-solid fa-circle fa-xs"></i>
+          </div>
+        `;
+
+        if (index === 0) {
+          li.classList.add('active');
+          firstStaffId = staff.id;
+          firstStaffName = staff.name;
+        }
+
+        li.addEventListener('click', () => {
+          document.querySelector('#staffListItems li.active')?.classList.remove('active');
+          li.classList.add('active');
+
+          receiverId = li.dataset.id;
+
+          document.getElementById('chatHeader').textContent = `Chat with ${staff.name}`;
+          loadChatHistory(receiverId);
+
+          unreadCounters[receiverId] = 0;
+          const counter = li.querySelector('.message-counter');
+          if (counter) {
+            counter.textContent = '0';
+            counter.style.display = 'none';
+          }
+        });
+
+        staffListContainer.appendChild(li);
+      });
+
+      await loadUserDepartments();
+
+      if (firstStaffId) {
+        receiverId = firstStaffId;
+        document.getElementById('chatHeader').textContent = `Chat with ${firstStaffName}`;
+        await loadChatHistory(receiverId);
+      }
+
+      // Socket.IO connection and logic here
+      const socket = io(BASE_URL, { auth: { token } });
+
+      socket.on('connect', () => console.log('✅ Connected to server'));
+
+      socket.on("online-users", (onlineUserIds) => {
+        document.querySelectorAll("#staffListItems li").forEach(li => {
+          const indicator = li.querySelector('.connection-indicator');
+          const userId = li.dataset.id;
+          if (!indicator) return;
+
+          if (onlineUserIds.includes(Number(userId))) {
+            indicator.classList.remove("text-warning");
+            indicator.classList.add("text-success");
+          } else {
+            indicator.classList.remove("text-success");
+            indicator.classList.add("text-warning");
+          }
+        });
+      });
+
+      socket.on('chat message', (data) => {
+        const chatMessages = document.getElementById('chatMessages');
+        const isCurrentChat =
+          (data.sender_id == receiverId || data.receiver_id == receiverId) ||
+          (data.department_id && receiverId == data.department_id);
+        const isSelf = Number(data.sender_id) === currentUserId;
+
+        const messageContent = data.message_type === 'voice' && data.file_url
+          ? `<audio controls style="width: 200px;">
+              <source src="${data.file_url}" type="${data.file_type}">
+              Your browser does not support the audio element.
+            </audio>`
+          : data.content;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+        msgDiv.innerHTML = `
+          <img src="https://i.pravatar.cc/36?u=${data.sender_id}" alt="User" class="rounded-circle me-2" width="36" height="36" />
+          <div>
+            <div class="fw-semibold">${isSelf ? 'You' : data.sender_name || 'Them'}</div>
+            <div class="bg-light border rounded p-2">${messageContent}</div>
+            <small class="text-muted">${new Date(data.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+          </div>
+        `;
+
+        if (isCurrentChat) {
+          chatMessages.appendChild(msgDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+          unreadCounters[data.sender_id] = (unreadCounters[data.sender_id] || 0) + 1;
+
+          const userLi = document.querySelector(`#staffListItems li[data-id='${data.sender_id}']`);
+          if (userLi) {
+            userLi.classList.add('has-sent');
+            const counter = userLi.querySelector('.message-counter');
+            if (counter) {
+              counter.textContent = unreadCounters[data.sender_id];
+              counter.style.display = 'inline-block';
+            }
+          }
+
+          if (data.department_id) {
+            const deptLi = document.querySelector(`#departmentCollapse li[data-dept-id='${data.department_id}']`);
+            if (deptLi) {
+              deptLi.classList.add('has-sent');
+            }
+          }
+        }
+      });
+
+      // Load chat history function
+      async function loadChatHistory(id) {
+        try {
+          const chatRes = await fetch(`/api/chat/history?uid=${uid}&receiver_id=${id}`);
+          const chatData = await chatRes.json();
+          const chatMessages = document.getElementById('chatMessages');
+          chatMessages.innerHTML = '';
+
+          chatData.forEach(msg => {
+            const isSelf = Number(msg.sender_id) === currentUserId;
+            const messageContent = msg.message_type === 'voice' && msg.file_url
+              ? `<audio controls style="width: 200px;">
+                  <source src="${msg.file_url}" type="${msg.file_type}">
+                  Your browser does not support the audio element.
+                </audio>`
+              : msg.content;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${isSelf ? 'sent' : 'received'}`;
+            msgDiv.innerHTML = `
+              <img src="https://i.pravatar.cc/36?u=${msg.sender_id}" alt="User" class="rounded-circle me-2" width="36" height="36" />
+              <div>
+                <div class="fw-semibold">${isSelf ? 'You' : msg.sender_name || 'Them'}</div>
+                <div class="bg-light border rounded p-2">${messageContent}</div>
+                <small class="text-muted">${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+              </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+          });
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (err) {
+          console.error("Failed to load chat history", err);
+        }
+      }
+
+      async function loadUserDepartments() {
+        try {
+          const deptRes = await fetch(`/api/staff/departments?uid=${uid}`);
+          const departments = await deptRes.json();
+
+          const deptList = document.getElementById('departmentCollapse');
+          deptList.innerHTML = '';
+
+          departments.forEach(dept => {
+            const li = document.createElement('li');
+            li.className = 'd-flex align-items-center justify-content-between p-2 mb-2 rounded-3 shadow-sm bg-white';
+            li.style.cursor = 'pointer';
+            li.dataset.deptId = dept.id;
+
+            li.innerHTML = `
+              <div class="fw-semibold">${dept.name}</div>
+              <span class="badge bg-danger text-white message-counter" style="font-size: 0.7rem; display:none;">0</span>
+            `;
+
+            li.addEventListener('click', () => {
+              receiverId = dept.id;
+              document.querySelector('#departmentCollapse li.active')?.classList.remove('active');
+              li.classList.add('active');
+
+              document.getElementById('chatHeader').textContent = `Chat with ${dept.name}`;
+
+              loadChatHistory(receiverId);
+
+              unreadCounters[dept.id] = 0;
+              const counter = li.querySelector('.message-counter');
+              if (counter) {
+                counter.textContent = '0';
+                counter.style.display = 'none';
+              }
+            });
+
+            deptList.appendChild(li);
+          });
+
+        } catch (err) {
+          console.error("Failed to load departments", err);
+        }
+      }
+
+    } catch (error) {
+      console.error("Error in DOMContentLoaded handler:", error);
+    }
+  });
+});
+</script>
+
+
+
+</body>
+</html>

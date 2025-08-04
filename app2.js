@@ -25,6 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // ✅ STATIC FILES
 app.use(express.static('public')); // For frontend assets (if any)
+app.use('/uploads/images', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/uploads/audio', express.static(path.join(__dirname, 'uploads/audio'))); // ✅ Serve uploaded voice files
 
 // ✅ ROUTES
