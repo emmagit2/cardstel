@@ -219,7 +219,7 @@
 
 <div class="sidebar-footer mt-auto d-flex align-items-center justify-content-between p-3 border-top">
   <div class="d-flex align-items-center gap-2">
-    <img src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle" width="32" height="32">
+    <img  id="adminimg" src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle" width="32" height="32">
     <div class="welcome-text fw-semibold fs-6 text-dark"> <span id="adminName">Admin</span></div>
   </div>
   <button id="logoutBtn" class="btn btn-sm btn-outline-danger">Logout</button>
@@ -374,22 +374,24 @@ const BASE_URL = window.location.hostname === "localhost"
     const token = await user.getIdToken();
 
     // Load profile
-    try {
-      const profile = await fetch(`/api/staff/profile?uid=${uid}`).then(res => res.json());
-      document.getElementById('adminName').textContent = profile.name || 'Admin';
+  try {
+  const profile = await fetch(`/api/staff/profile?uid=${uid}`).then(res => res.json());
 
-      const profileImage = document.querySelector('#profileDropdown img');
-      profileImage.src = profile.profile_picture?.data
-        ? `data:image/jpeg;base64,${profile.profile_picture.data}`
-        : `https://i.pravatar.cc/36?u=${uid}`;
-    } catch (err) {
-      console.error("Error loading profile:", err);
-    }
+  document.getElementById('adminName').textContent = profile.name || 'Admin';
+  const profileImage = document.querySelector('#adminimg');
+  profileImage.src = profile.profile_picture
+    ? profile.profile_picture
+    : `https://i.pravatar.cc/36?u=${uid}`;
+} catch (err) {
+  console.error("Error loading profile:", err);
+}
 
-    
-    // Staff list loader and first chat setup
+
+ 
+// Staff list loader and first chat setup
 let firstStaffId = null;
 let firstStaffName = null;
+
 try {
   const staffList = await fetch('/api/staff/all').then(res => res.json());
 
@@ -419,45 +421,33 @@ try {
     li.style.cursor = 'pointer';
     li.dataset.id = staff.id;
 
+    // ✅ Set profile image
     let profileImg = `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
-    if (staff.profile_picture?.data) {
-      try {
-        const bufferData = staff.profile_picture.data;
-        const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
-        profileImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
-      } catch (imgErr) {
-        console.error("Error decoding profile image:", imgErr);
-      }
+    if (staff.profile_picture) {
+      profileImg = staff.profile_picture.startsWith('/')
+        ? staff.profile_picture
+        : `/${staff.profile_picture}`;
     }
 
+    // ✅ Set badge
     let badge = '';
     if (staff.role === 'super_admin') {
       badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
     } else if (staff.role === 'admin') {
       badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
     }
-li.className = "staff-item"; // optional
-li.innerHTML = `
-  <div class="d-flex align-items-center gap-2 position-relative w-100">
-    <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
-    <div class="text-dark fw-semibold d-flex align-items-center">
-      ${staff.name}
-      ${badge}
-    </div>
-    <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
-  </div>
-  <div class="connection-indicator text-warning"><i class="fa-solid fa-circle fa-xs"></i></div>
-`;
-// Add this line to open chat when the staff item is clicked
-li.addEventListener('click', () => {
-  openChat(staff.name, profileImg);
-});
 
-    if (index === 0) {
-      li.classList.add('active');
-      firstStaffId = staff.id;
-      firstStaffName = staff.name;
-    }
+    li.innerHTML = `
+      <div class="d-flex align-items-center gap-2 position-relative w-100">
+        <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+        <div class="text-dark fw-semibold d-flex align-items-center">
+          ${staff.name}
+          ${badge}
+        </div>
+        <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
+      </div>
+      <div class="connection-indicator text-warning"><i class="fa-solid fa-circle fa-xs"></i></div>
+    `;
 
     li.addEventListener('click', () => {
       document.querySelector('#staffListItems li.active')?.classList.remove('active');
@@ -467,10 +457,16 @@ li.addEventListener('click', () => {
 
       // ✅ Update only chat header name and image
       document.getElementById('chatName').textContent = staff.name;
-      document.getElementById('chatImg').src = staff.imgUrl || "https://i.pravatar.cc/45";
+
+      const imgSrc = staff.profile_picture
+        ? (staff.profile_picture.startsWith('/') ? staff.profile_picture : `/${staff.profile_picture}`)
+        : `https://i.pravatar.cc/45?u=${staff.firebase_uid}`;
+
+      document.getElementById('chatImg').src = imgSrc;
 
       loadChatHistory(receiverId);
 
+      // ✅ Reset unread count
       unreadCounters[receiverId] = 0;
       const counter = li.querySelector('.message-counter');
       if (counter) {
@@ -479,11 +475,18 @@ li.addEventListener('click', () => {
       }
     });
 
+    if (index === 0) {
+      li.classList.add('active');
+      firstStaffId = staff.id;
+      firstStaffName = staff.name;
+    }
+
     staffListContainer.appendChild(li);
   });
 
   await loadUserDepartments();
 
+  // ✅ Open first chat by default
   if (firstStaffId) {
     receiverId = firstStaffId;
 
@@ -493,14 +496,10 @@ li.addEventListener('click', () => {
         document.getElementById('chatName').textContent = firstStaff.name;
 
         let firstImg = `https://i.pravatar.cc/45?u=${firstStaff.firebase_uid}`;
-        if (firstStaff.profile_picture?.data) {
-          try {
-            const bufferData = firstStaff.profile_picture.data;
-            const pathStr = new TextDecoder().decode(new Uint8Array(bufferData));
-            firstImg = pathStr.startsWith('/uploads') ? pathStr : `/${pathStr}`;
-          } catch (imgDecodeErr) {
-            console.error("Error decoding profile picture path:", imgDecodeErr);
-          }
+        if (firstStaff.profile_picture) {
+          firstImg = firstStaff.profile_picture.startsWith('/')
+            ? firstStaff.profile_picture
+            : `/${firstStaff.profile_picture}`;
         }
 
         document.getElementById('chatImg').src = firstImg;
@@ -679,9 +678,11 @@ const isSelf = Number(data.sender_id) === currentUserId;
       const input = document.getElementById('chatInput');
       const msg = input.value.trim();
       if (!msg || !receiverId) return;
+    console.log(receiverId)
 
       let emitData = {
         content: msg,
+        message_type: 'text',
         sender_id: currentUserId,
         sender_name: document.getElementById('adminName').textContent,
         chat_type: 'private',
@@ -689,15 +690,16 @@ const isSelf = Number(data.sender_id) === currentUserId;
         department_id: null
       };
 
-      const isDepartment = !document.querySelector(`#departmentCollapse li[data-dept-id='${receiverId}']`);
+  const isDepartment = document.querySelector(`#departmentCollapse li[data-dept-id='${receiverId}']`);
       if (isDepartment) {
-        emitData.type = 'department';
+        emitData.chat_type='department';
         emitData.department_id = receiverId;
       } else {
         emitData.receiver_id = receiverId;
       }
 
       socket.emit('chat message', emitData);
+        console.log("Sending message to server:", emitData);
 
       const chatMessages = document.getElementById('messages');
       const selfMsg = document.createElement('div');
@@ -934,27 +936,41 @@ async function loadDepartmentChat(departmentId) {
 }
 
    
- async function loadChatHistory(withUserId) {
+async function loadChatHistory(withUserId) {
   if (!uid) {
     console.warn('⚠️ loadChatHistory called but uid is null or undefined');
     return;
   }
 
   try {
-    const response = await fetch(`/api/messages?type=private&user_id=${withUserId}`);
+    // You can update this to include both sender and receiver if needed
+    const response = await fetch(`/api/messages?type=private&user_id=${currentUserId}&with_user_id=${withUserId}`);
+
+    if (!response.ok) {
+      const errorRes = await response.json();
+      console.error('❌ Server error:', errorRes.error || 'Unknown error');
+      return;
+    }
+
     const messages = await response.json();
 
-    const chatMessages = document.getElementById('messages'); // Use "messages" as you wanted
+    if (!Array.isArray(messages)) {
+      console.error('❌ Expected an array but got:', messages);
+      return;
+    }
+
+    const chatMessages = document.getElementById('messages');
     chatMessages.innerHTML = '';
 
     for (const msg of messages) {
       const isSelf = Number(msg.sender_id) === currentUserId;
 
       const messageContent = msg.message_type === 'voice' && msg.file_url
-        ? `<audio controls style="width: 200px;">
-             <source src="${msg.file_url}" type="${msg.file_type || 'audio/webm'}">
-             Your browser does not support the audio element.
-           </audio>`
+        ? `
+          <audio controls style="width: 200px;">
+            <source src="${msg.file_url}" type="${msg.file_type || 'audio/webm'}">
+            Your browser does not support the audio element.
+          </audio>`
         : msg.content;
 
       const sentTime = msg.sent_at
@@ -972,11 +988,14 @@ async function loadDepartmentChat(departmentId) {
       chatMessages.appendChild(messageDiv);
     }
 
+    // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
   } catch (err) {
     console.error('❌ Failed to load chat history:', err);
   }
 }
+
 
 
   });

@@ -1,139 +1,315 @@
-const attachBtn = document.getElementById('attachBtn');
-const attachMenu = document.getElementById('attachMenu');
-const filePhoto = document.getElementById('filePhoto');
-const fileDocument = document.getElementById('fileDocument');
-const fileAudio = document.getElementById('fileAudio');
+<script type="module">
+const departmentCollapse = document.getElementById('departmentCollapse');
+const staffCollapse = document.getElementById('staffCollapse');
 
-attachBtn.addEventListener('click', () => {
-  attachMenu.style.display = attachMenu.style.display === 'block' ? 'none' : 'block';
+departmentCollapse.addEventListener('shown.bs.collapse', () => {
+  document.getElementById('chevronDepartment').classList.replace('fa-chevron-right', 'fa-chevron-down');
+});
+departmentCollapse.addEventListener('hidden.bs.collapse', () => {
+  document.getElementById('chevronDepartment').classList.replace('fa-chevron-down', 'fa-chevron-right');
 });
 
-document.addEventListener('click', (e) => {
-  if (!attachMenu.contains(e.target) && e.target !== attachBtn) {
-    attachMenu.style.display = 'none';
+staffCollapse.addEventListener('shown.bs.collapse', () => {
+  document.getElementById('chevronStaff').classList.replace('fa-chevron-right', 'fa-chevron-down');
+});
+staffCollapse.addEventListener('hidden.bs.collapse', () => {
+  document.getElementById('chevronStaff').classList.replace('fa-chevron-down', 'fa-chevron-right');
+});
+
+const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://cardstel.onrender.com";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCnkHghVzYEKhYMncwLQ-IlGLVbfIJt9U",
+  authDomain: "chat-app-6776e.firebaseapp.com",
+  projectId: "chat-app-6776e",
+  storageBucket: "chat-app-6776e.appspot.com",
+  messagingSenderId: "136411415099",
+  appId: "1:136411415099:web:37f7c2c9cb4431db27121e",
+  measurementId: "G-GVS3VG6Y50"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let uid = null;
+let currentUserId = null;
+let receiverId = null;
+const unreadCounters = {};
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "/login";
+    return;
   }
-});
 
-document.querySelectorAll('.attachOption').forEach(button => {
-  button.addEventListener('click', () => {
-    const type = button.dataset.type;
-    attachMenu.style.display = 'none';
-
-    if (type === 'photo') filePhoto.click();
-    else if (type === 'document') fileDocument.click();
-    else if (type === 'audio') fileAudio.click();
-  });
-});
-
-// Helper function to upload and show file in chat
-async function uploadFile(file, endpoint, messageType) {
-  const messageContainer = document.getElementById('chatMessages');
-
-  // Create temp message UI with sending label
-  const tempMsgDiv = document.createElement('div');
-  tempMsgDiv.className = 'message ' + messageType + ' sending';
-
-  let fileElement;
-  if (messageType === 'image') {
-    fileElement = document.createElement('img');
-    fileElement.src = URL.createObjectURL(file);
-    fileElement.style.maxWidth = '150px';
-  } else if (messageType === 'document') {
-    fileElement = document.createElement('a');
-    fileElement.href = '#';
-    fileElement.textContent = file.name;
-    fileElement.target = '_blank';
-  } else if (messageType === 'audio') {
-    fileElement = new Audio(URL.createObjectURL(file));
-    fileElement.controls = true;
-  }
-
-  const statusLabel = document.createElement('small');
-  statusLabel.textContent = 'Sending...';
-  statusLabel.className = 'sending-label';
-
-  tempMsgDiv.appendChild(fileElement);
-  tempMsgDiv.appendChild(statusLabel);
-  messageContainer.appendChild(tempMsgDiv);
-
-  // Emit temp socket message with local file preview (optional)
-  socket.emit('chat message', {
-    content: `[${messageType.charAt(0).toUpperCase() + messageType.slice(1)} message]`,
-    file_url: URL.createObjectURL(file),
-    file_type: file.type,
-    file_name: file.name,
-    message_type: messageType,
-    sender_id: currentUserId,
-    receiver_id: receiverId,
-    sender_name: document.getElementById('adminName').textContent,
-    chat_type: 'private',
-    is_temp: true,
-  });
-
-  // Prepare form data
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('sender_id', currentUserId);
-  formData.append('receiver_id', receiverId);
-  formData.append('chat_type', 'private');
+  uid = user.uid;
+  const token = await user.getIdToken();
 
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      body: formData,
+    const profile = await fetch(`/api/staff/profile?uid=${uid}`).then(res => res.json());
+
+    document.getElementById('adminName').textContent = profile.name || 'Admin';
+
+    const profileImage = document.querySelector('#profileDropdown img');
+    // Use profile_picture as URL/text directly, no base64 decode
+    profileImage.src = profile.profile_picture
+      ? profile.profile_picture
+      : `https://i.pravatar.cc/36?u=${uid}`;
+  } catch (err) {
+    console.error("Error loading profile:", err);
+  }
+
+  let firstStaffId = null;
+  let firstStaffName = null;
+
+  try {
+    const staffList = await fetch('/api/staff/all').then(res => res.json());
+
+    const uidToIdMap = {};
+    staffList.forEach(staff => {
+      uidToIdMap[staff.firebase_uid] = staff.id;
     });
 
-    const result = await res.json();
+    currentUserId = uidToIdMap[uid];
+    console.log("✅ Firebase UID:", uid);
+    console.log("✅ Mapped numeric staff ID:", currentUserId);
 
-    // Update UI with final file URL and "Sent" label
-    if (messageType === 'image') {
-      fileElement.src = result.file_url;
-    } else if (messageType === 'document') {
-      fileElement.href = result.file_url;
-    } else if (messageType === 'audio') {
-      fileElement.src = result.file_url;
-      fileElement.load();
+    const staffListContainer = document.getElementById('staffListItems');
+    staffListContainer.innerHTML = ''; // Clear first
+
+    const sortedStaff = staffList
+      .filter(staff => staff.firebase_uid !== uid)
+      .sort((a, b) => {
+        const priority = { super_admin: 0, admin: 1, user: 2 };
+        return (priority[a.role] ?? 3) - (priority[b.role] ?? 3);
+      });
+
+    sortedStaff.forEach((staff, index) => {
+      const li = document.createElement('li');
+      li.className = 'staff-item d-flex align-items-center justify-content-between p-2 rounded-3 mb-2 bg-white shadow-sm';
+      li.style.cursor = 'pointer';
+      li.dataset.id = staff.id;
+
+      // Use profile_picture directly as image src (no base64)
+      let profileImg = staff.profile_picture
+        ? (staff.profile_picture.startsWith('/') ? staff.profile_picture : staff.profile_picture)
+        : `https://i.pravatar.cc/32?u=${staff.firebase_uid}`;
+
+      let badge = '';
+      if (staff.role === 'super_admin') {
+        badge = `<span class="badge bg-danger text-white ms-2" style="font-size:10px;">Super Admin</span>`;
+      } else if (staff.role === 'admin') {
+        badge = `<span class="badge bg-primary text-white ms-2" style="font-size:10px;">Admin</span>`;
+      }
+
+      li.innerHTML = `
+        <div class="d-flex align-items-center gap-2 position-relative w-100">
+          <img src="${profileImg}" alt="${staff.name}" class="rounded-circle border" width="36" height="36" />
+          <div class="text-dark fw-semibold d-flex align-items-center">
+            ${staff.name}
+            ${badge}
+          </div>
+          <span class="message-counter badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill" style="font-size: 0.7rem; display: none;">0</span>
+        </div>
+        <div class="connection-indicator text-warning"><i class="fa-solid fa-circle fa-xs"></i></div>
+      `;
+
+      li.addEventListener('click', () => {
+        document.querySelector('#staffListItems li.active')?.classList.remove('active');
+        li.classList.add('active');
+
+        receiverId = li.dataset.id;
+
+        document.getElementById('chatName').textContent = staff.name;
+
+        const imgSrc = staff.profile_picture
+          ? (staff.profile_picture.startsWith('/') ? staff.profile_picture : staff.profile_picture)
+          : `https://i.pravatar.cc/45?u=${staff.firebase_uid}`;
+
+        document.getElementById('chatImg').src = imgSrc;
+
+        loadChatHistory(receiverId);
+
+        unreadCounters[receiverId] = 0;
+        const counter = li.querySelector('.message-counter');
+        if (counter) {
+          counter.textContent = '0';
+          counter.style.display = 'none';
+        }
+
+        // Save selected receiverId for persistence
+        localStorage.setItem('lastReceiverId', receiverId);
+      });
+
+      if (index === 0) {
+        li.classList.add('active');
+        firstStaffId = staff.id;
+        firstStaffName = staff.name;
+      }
+
+      staffListContainer.appendChild(li);
+    });
+
+    await loadUserDepartments();
+
+    // Use stored lastReceiverId or default to first staff
+    const savedReceiverId = localStorage.getItem('lastReceiverId');
+    if (savedReceiverId && staffList.some(s => s.id == savedReceiverId)) {
+      receiverId = savedReceiverId;
+      const selectedStaff = sortedStaff.find(s => s.id == receiverId);
+      if (selectedStaff) {
+        document.getElementById('chatName').textContent = selectedStaff.name;
+        document.getElementById('chatImg').src = selectedStaff.profile_picture
+          ? selectedStaff.profile_picture.startsWith('/')
+            ? selectedStaff.profile_picture
+            : selectedStaff.profile_picture
+          : `https://i.pravatar.cc/45?u=${selectedStaff.firebase_uid}`;
+      }
+      loadChatHistory(receiverId);
+      // Set active class on saved staff
+      document.querySelectorAll('#staffListItems li').forEach(li => {
+        li.classList.toggle('active', li.dataset.id === receiverId);
+      });
+    } else if (firstStaffId) {
+      receiverId = firstStaffId;
+      document.getElementById('chatName').textContent = firstStaffName;
+      const firstStaff = sortedStaff.find(s => s.id == firstStaffId);
+      if (firstStaff) {
+        document.getElementById('chatImg').src = firstStaff.profile_picture
+          ? (firstStaff.profile_picture.startsWith('/') ? firstStaff.profile_picture : firstStaff.profile_picture)
+          : `https://i.pravatar.cc/45?u=${firstStaff.firebase_uid}`;
+      }
+      loadChatHistory(receiverId);
     }
 
-    statusLabel.textContent = 'Sent';
-    statusLabel.style.color = 'green';
-    tempMsgDiv.classList.remove('sending');
-
-    // Emit socket event with final message info
-    socket.emit('chat message', {
-      content: `[${messageType.charAt(0).toUpperCase() + messageType.slice(1)} message]`,
-      file_url: result.file_url,
-      file_type: result.file_type,
-      file_name: result.file_name,
-      message_type: messageType,
-      sender_id: currentUserId,
-      receiver_id: receiverId,
-      sender_name: document.getElementById('adminName').textContent,
-      chat_type: 'private',
-    });
-
   } catch (err) {
-    console.error(`${messageType} upload failed:`, err);
-    statusLabel.textContent = 'Upload failed';
-    statusLabel.style.color = 'red';
+    console.error("❌ Failed to fetch staff list or initialize chat:", err);
+  }
+});
+
+// Functions for openChat, goBack, touch events remain unchanged — omitted for brevity
+
+const chatView = document.getElementById('chatView');
+const backButton = document.getElementById('goBack');
+
+backButton.addEventListener('click', goBack);
+
+function goBack() {
+  chatView.classList.remove("active");
+}
+
+let startX = 0;
+chatView.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+chatView.addEventListener('touchend', (e) => {
+  let endX = e.changedTouches[0].clientX;
+  if (startX < 50 && endX - startX > 100) {
+    goBack();
+  }
+});
+
+// Socket.io connection and IndexedDB offline handling unchanged — omitted for brevity
+
+const socket = io();
+
+// Handle unread counters visually
+function incrementUnreadCounter(staffId) {
+  unreadCounters[staffId] = (unreadCounters[staffId] || 0) + 1;
+  const staffLi = document.querySelector(`#staffListItems li[data-id="${staffId}"]`);
+  if (staffLi) {
+    const counter = staffLi.querySelector('.message-counter');
+    if (counter) {
+      counter.textContent = unreadCounters[staffId];
+      counter.style.display = 'inline-block';
+    }
   }
 }
 
-// File input change handlers
-filePhoto.addEventListener('change', (e) => {
-  if (e.target.files.length > 0) {
-    uploadFile(e.target.files[0], '/api/messages/send/image', 'image');
+// Chat message loading function
+async function loadChatHistory(selectedReceiverId) {
+  if (!selectedReceiverId) return;
+
+  try {
+    // Show loading spinner or clear messages
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.innerHTML = `<div class="text-center text-muted mt-3">Loading chat...</div>`;
+
+    const response = await fetch(`${BASE_URL}/api/chats?staff_id=${currentUserId}&receiver_id=${selectedReceiverId}`);
+    const data = await response.json();
+
+    chatMessagesDiv.innerHTML = ''; // clear old messages
+
+    if (data && Array.isArray(data)) {
+      data.forEach(msg => {
+        const isSent = msg.sender_id === currentUserId;
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', isSent ? 'sent' : 'recv');
+
+        messageDiv.innerHTML = `
+          <div class="message-text">${msg.message}</div>
+          <div class="message-time">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        `;
+
+        chatMessagesDiv.appendChild(messageDiv);
+      });
+
+      // Scroll to bottom
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+      // Clear unread counter for this chat as user has seen it
+      unreadCounters[selectedReceiverId] = 0;
+      const staffLi = document.querySelector(`#staffListItems li[data-id="${selectedReceiverId}"]`);
+      if (staffLi) {
+        const counter = staffLi.querySelector('.message-counter');
+        if (counter) {
+          counter.textContent = '0';
+          counter.style.display = 'none';
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load chat history:", err);
+  }
+}
+
+// Socket message receive
+socket.on('private_message', data => {
+  // Only process messages where current user is sender or receiver
+  if (!currentUserId) return;
+
+  if (data.receiver_id === currentUserId || data.sender_id === currentUserId) {
+    if (receiverId == data.sender_id || receiverId == data.receiver_id) {
+      // Reload chat history to display new message if active chat is selected
+      loadChatHistory(receiverId);
+    } else {
+      // Increase unread count on staff list item if not current chat
+      let otherId = (data.sender_id === currentUserId) ? data.receiver_id : data.sender_id;
+      incrementUnreadCounter(otherId);
+    }
   }
 });
 
-fileDocument.addEventListener('change', (e) => {
-  if (e.target.files.length > 0) {
-    uploadFile(e.target.files[0], '/api/messages/send/file', 'document');
-  }
-});
+// Department fetching function
+async function loadUserDepartments() {
+  try {
+    const res = await fetch('/api/departments/all');
+    const depts = await res.json();
 
-fileAudio.addEventListener('change', (e) => {
-  if (e.target.files.length > 0) {
-    uploadFile(e.target.files[0], '/api/messages/send/voice', 'audio');
+    const deptList = document.getElementById('departmentListItems');
+    deptList.innerHTML = '';
+
+    depts.forEach(dept => {
+      const li = document.createElement('li');
+      li.className = 'department-item d-flex align-items-center p-2 rounded-3 mb-2 bg-white shadow-sm';
+      li.textContent = dept.name;
+      deptList.appendChild(li);
+    });
+  } catch (err) {
+    console.error("Failed to load departments:", err);
   }
-});
+}
+</script>

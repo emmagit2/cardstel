@@ -28,7 +28,6 @@ exports.sendTextMessage = async (req, res) => {
     ];
 
     const { rows } = await pool.query(insertQuery, values);
-
     res.status(201).json(rows[0]);
 
   } catch (err) {
@@ -50,7 +49,7 @@ exports.getMessages = async (req, res) => {
         SELECT 
           m.*, 
           u.name AS sender_name,
-          encode(u.profile_picture, 'base64') AS sender_profile
+          u.profile_picture AS sender_profile
         FROM messages m
         LEFT JOIN users u ON u.id = m.sender_id
         WHERE m.chat_type = 'private'
@@ -64,7 +63,7 @@ exports.getMessages = async (req, res) => {
         SELECT 
           m.*, 
           u.name AS sender_name,
-          encode(u.profile_picture, 'base64') AS sender_profile
+          u.profile_picture AS sender_profile
         FROM messages m
         LEFT JOIN users u ON u.id = m.sender_id
         WHERE m.chat_type = 'department'
@@ -74,10 +73,17 @@ exports.getMessages = async (req, res) => {
       values = [department_id];
 
     } else {
+      console.error('❌ Missing or invalid parameters:', { type, user_id, department_id });
       return res.status(400).json({ error: 'Missing or invalid parameters' });
     }
 
     const { rows } = await pool.query(query, values);
+
+    if (rows.length === 0) {
+      console.error(`❌ No messages found for ${type === 'private' ? 'user_id: ' + user_id : 'department_id: ' + department_id}`);
+      return res.status(404).json({ error: 'No messages found' });
+    }
+
     res.status(200).json(rows);
 
   } catch (err) {
@@ -188,9 +194,7 @@ exports.sendImageMessage = async (req, res) => {
   }
 };
 
-// In controllers/messageTroller.js or wherever your controllers are
-
-// ✅ SEND FILE MESSAGE (Documents, PDFs, etc)
+// ✅ SEND FILE MESSAGE
 exports.sendFileMessage = async (req, res) => {
   try {
     const file = req.file;
@@ -223,7 +227,7 @@ exports.sendFileMessage = async (req, res) => {
       fileUrl,
       fileType,
       fileName,
-      'file' // message_type for documents/files
+      'file'
     ];
 
     const { rows } = await pool.query(insertQuery, values);

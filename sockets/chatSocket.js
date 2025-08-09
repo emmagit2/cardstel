@@ -38,40 +38,48 @@ module.exports = function (io) {
     console.log(`✅ Socket connected: ${socket.dbUserId}`);
 
     socket.on('chat message', async (data) => {
-      const { content, chat_type, receiver_id } = data;
+      const { content, chat_type, receiver_id, message_type } = data;
 
-      // Simple validation
+      // Basic validation
       if (!content || !chat_type || (chat_type === 'private' && !receiver_id)) {
         console.warn('❌ Invalid chat message payload received');
         return;
       }
 
+      const allowedTypes = ['text', 'voice', 'file'];
+      const msgType = allowedTypes.includes(message_type) ? message_type : 'text';
+
       try {
-        // Save to database
-        await db.query(
-          `INSERT INTO messages (sender_id, receiver_id, department_id, content, chat_type)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [socket.dbUserId, receiver_id, socket.departmentId, content, chat_type]
+        // Save to database and return inserted message
+        const result = await db.query(
+          `INSERT INTO messages (sender_id, receiver_id, department_id, content, chat_type, message_type)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING *`,
+          [socket.dbUserId, receiver_id, socket.departmentId, content, chat_type, msgType]
         );
 
+        const message = result.rows[0];
+
         const msg = {
-          sender_id: socket.dbUserId,
-          receiver_id,
-          content,
-          chat_type,
+          id: message.id,
+          sender_id: message.sender_id,
+          receiver_id: message.receiver_id,
+          department_id: message.department_id,
+          content: message.content,
+          chat_type: message.chat_type,
+          message_type: message.message_type,
           sender_name: socket.senderName || 'Unknown',
-          sent_at: new Date().toISOString()
+          sent_at: message.sent_at,
         };
 
         if (chat_type === 'private') {
-          // ✅ Emit only to the receiver
-          if (receiver_id !== socket.dbUserId) {
-            io.to(`user_${receiver_id}`).emit('chat message', msg);
-          }
+          // Send to both sender and receiver
+          io.to(`user_${receiver_id}`).emit('chat message', msg);
+          io.to(`user_${socket.dbUserId}`).emit('chat message', msg);
         } else if (chat_type === 'department') {
           io.to(`department_${socket.departmentId}`).emit('chat message', msg);
         } else {
-          io.emit('chat message', msg); // fallback (e.g., global)
+          io.emit('chat message', msg); // fallback (global)
         }
       } catch (err) {
         console.error('💥 DB Insertion Error:', err.message);
